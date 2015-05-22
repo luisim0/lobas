@@ -1,4 +1,6 @@
 # lobas
 Pishis lobas locas de la EGIA
-putos...
 
+Pishi github!
+
+putos...
