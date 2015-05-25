@@ -1,0 +1,56 @@
+Pantalla principal: https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=1&option=credential&sid=1
+RFC: name="Ecom_User_ID"
+PASS: name="Ecom_Password"
+BOTON: name="submit";
+---------------------------------------------------------
+Consultar emitidas radial id
+ctl00_MainContent_RdoTipoBusquedaEmisor
+checked="checked"
+
+Consultar recibidas radial id
+ctl00_MainContent_RdoTipoBusquedaReceptor
+
+Continuar bot�n id
+ctl00_MainContent_BtnBusqueda
+
+---------------------------------------------------------
+
+Por folio fiscal id
+ctl00_MainContent_RdoFolioFiscal
+
+Aqu� se escribe el folio fiscal id
+ctl00_MainContent_TxtUUID
+
+Por fecha de emisi�n id
+ctl00_MainContent_RdoFechas
+
+<a id="sbSelector_11005903".. aqu� va a dar la selecci�n del a�o
+<a id="sbSelector_17888398".. aqu� va a dar la selecci�n del mes
+El del d�a se queda vac�o
+
+RFC Emisor id ctl00_MainContent_TxtRfcReceptor
+es type="text"
+
+Estado del comprobante id="sbSelector_49385192" aqu� pueden ser varias cosas:
+Seleccione un valor...
+Cancelado
+Vigente
+--------------------------------------------------
+Ya que busc� bien ching�n:
+
+La tabla de resultados tiene id="masivapg0"
+de cada tr, el segundo td tiene el folio fiscal no tiene id
+est� dentro innerHTML de un span --> 
+div id="masivapg0" > table > tbody > tr > td's > span
+
+Bot�n descarga detalle tiene clase "BtnVerDetalle"
+Bot�n descarga XML tienen clase "BtnDescarga"
+Jalamos el arreglo con todos
+
+El link de descarga se compone por:
+-La p�gina padre: https://portalcfdi.facturaelectronica.sat.gob.mx/
+-El primer argumento de la funci�n convocada por onclick:
+  -onclick="[return] AccionCfdi('URI','Detalle')
+  -al pegar la p�gina padre + URI, se abre el di�logo de descarga
+
+Los corchetes indican que es opcional
