@@ -1,6 +1,6 @@
 //Global Vars
 var tabid = -1;
-var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=1&option=credential&sid=1";
+var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
 
 //Initialize
 function main(){
