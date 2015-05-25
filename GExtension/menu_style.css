@@ -23,5 +23,12 @@
 }
 
 #fapp_logo_holder{
+	width: 100%;
 	padding-right: 10px;
+}
+
+#fapp_frame_contents{
+	width: 250px;
+	height: 100%;
+	float: left;
 }
