@@ -18,8 +18,13 @@
   "web_accessible_resources": [
     "IMGs/*.png"
   ],
+  "background": {
+  	"scripts": ["background.js"],
+  	"persistent": false
+  },
   "permissions": [
     "tabs",
-    "https://ajax.googleapis.com/"
+    "https://ajax.googleapis.com/",
+    "http://facturapp.eu.pn/pruebas.php"
   ]
 }

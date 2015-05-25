@@ -1,6 +1,7 @@
 /*Classes*/
 .fapp_main_panel{
-	width: 300px;
+	/*width: 300px;
+	transition: width 0.5s ease-in;*/
 	height: 95vh;
 	border: none;
 	background-color: rgba(124,194,175,0.8);
@@ -8,9 +9,34 @@
 	float: right;
 }
 
+.fapp_frame_contents{
+	width: 250px;
+	transition: width 0.5s ease-in;
+	float: left;
+	overflow: hidden;
+}
+
+.fapp_frame_contents_collapsed{
+	width: 0px;
+	transition: width 0.5s ease-out;
+	float: left;
+	overflow: hidden;
+}
+
+.rotate{
+	transform: rotate(180deg);
+	transition: transform 0.5s;
+}
+
+.no_rotate{
+	transform: rotate(0deg);
+	transition: transform 0.5s;
+}
+
 /*IDs*/
 #fapp_main_panel{
 	display: table;
+	overflow: hidden;
 }
 
 #fapp_frame_manipulate, #fapp_frame_contents{
@@ -20,17 +46,18 @@
 #fapp_frame_manipulate{
 	width: 50px;
 	height: 100%;
-	border-right: thin solid #c4c4b7;
-	text-align: center;
+	text-align: left;
 	float: left;
 }
 
 #fapp_hide_holder{
 	width: 100%;
 	height: 100px;
+	padding: 5px;
+	background: url("chrome.extension.getURL('IMGs/hide_unnactive.png')")
 }
 
 #fapp_logo_holder{
 	width: 100%;
-	padding-right: 10px;
+	overflow: hidden;
 }
