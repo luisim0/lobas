@@ -1,14 +1,4 @@
 /*Classes*/
-.fapp_main_panel{
-	/*width: 300px;
-	transition: width 0.5s ease-in;*/
-	height: 95vh;
-	border: none;
-	background-color: rgba(124,194,175,0.8);
-	position: relative;
-	float: right;
-}
-
 .fapp_frame_contents{
 	width: 250px;
 	transition: width 0.5s ease-in;
@@ -25,18 +15,22 @@
 
 .rotate{
 	transform: rotate(180deg);
-	transition: transform 0.5s;
+	transition: transform 0.5s ease-out;
 }
 
 .no_rotate{
 	transform: rotate(0deg);
-	transition: transform 0.5s;
+	transition: transform 0.5s ease-in;
 }
 
 /*IDs*/
 #fapp_main_panel{
+	height: 95vh;
+	border: none;
+	background-color: rgba(124,194,175,0.8);
+	position: relative;
+	float: right;
 	display: table;
-	overflow: hidden;
 }
 
 #fapp_frame_manipulate, #fapp_frame_contents{
