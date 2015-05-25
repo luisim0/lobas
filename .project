@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 8eb04327e2550d470b50cf71447eea3e99a5aa8b
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>lobas</name>
@@ -9,3 +13,19 @@
 	<natures>
 	</natures>
 </projectDescription>
+<<<<<<< HEAD
+=======
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>lobas</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+	</buildSpec>
+	<natures>
+	</natures>
+</projectDescription>
+>>>>>>> 3f08c8ad57a94b5fc60810096f6662e1d09bf3dc
+>>>>>>> 8eb04327e2550d470b50cf71447eea3e99a5aa8b
