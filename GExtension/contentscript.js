@@ -1,13 +1,15 @@
 //Globals
 var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
 var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
+var status_ready = chrome.extension.getURL("IMGs/ready.png");
+var status_loading = chrome.extension.getURL("IMGs/loading.gif");
+var status_wrong = chrome.extension.getURL("IMGs/wrong.png");
 
 //Functions
 function build_menu(){
 	var menu = document.createElement('div');
 	menu.id = 'fapp_main_panel';
-	menu.className = 'fapp_main_panel';
-	menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate'/></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'/></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><a id='test'>Place RFC</a><br><a id='collapse'>Show/Hide</a></div>";
+	menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate'/></div><div id='fapp_status_holder'><img src='' id='fapp_status'/></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'/></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><a id='test'>Place RFC</a></div>";
 	
 	//Insert structure
 	document.body.appendChild(menu);
@@ -16,10 +18,54 @@ function build_menu(){
 	var hide_button = document.getElementById("fapp_hide_button"); 
 	hide_button.src = hide_unnactive_URL;
 	hide_button.width = "40"; hide_button.height = "40";
+	
+	var status_image = document.getElementById("fapp_status");
+	status_image.src = chrome.extension.getURL("IMGs/ready.png");
+	status_image.height = "30";
+	status_image.width = "30";
+	
 	document.getElementById("fapp_logo").src = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
+	
+	//Title, recycle menu
+	menu = document.createElement("div");
+	menu.id = "fapp_contents_heading";
+	menu.innerHTML = "<p>Menú Principal</p>";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	
+	//Profile management
+	menu = document.createElement("div");
+	menu.className = "fapp_category_container";
+	menu.innerHTML = "<p>Información de Cuenta</p>";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	//Contents div
+	menu = document.createElement("div");
+	menu.className = "fapp_data_container";
+	menu.innerHTML = "<p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p><br><p>Something</p>";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	
+	//RFC Registry
+	menu = document.createElement("div");
+	menu.className = "fapp_category_container";
+	menu.innerHTML = "<p>Registro de RFCs</p>";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	//Contents div
+	menu = document.createElement("div");
+	menu.className = "fapp_data_container";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	
+	//Explorer Settings
+	menu = document.createElement("div");
+	menu.className = "fapp_category_container";
+	menu.innerHTML = "<p>Nueva búsqueda</p>";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
+	//Contents div
+	menu = document.createElement("div");
+	menu.className = "fapp_data_container";
+	document.getElementById("fapp_frame_contents").appendChild(menu);
 }
 
 function add_hide_listener(){
+	//Button to hide/show the sidepanel
 	var hide_button = document.getElementById("fapp_hide_button");
 	hide_button.addEventListener('click',function(){
 		var main_panel = document.getElementById("fapp_frame_contents"); 
@@ -37,11 +83,22 @@ function add_hide_listener(){
 	hide_button.addEventListener('mouseout',function(){
 		hide_button.src = hide_unnactive_URL;
 	});
+	
+	//This is a php message test
 	var test_link = document.getElementById("test");
+	var status_image = document.getElementById("fapp_status");
 	test_link.addEventListener('click',function(){
+		//Change the status image
+		status_image.src = status_loading;
+		//Send image to background
 		chrome.extension.sendMessage({action:'get_php'},function(response){
-			var rfc_box = document.getElementsByName("Ecom_User_ID")[0];
-			rfc_box.value = response.answer;
+			if(response.answer == 'Error'){
+				status_image.src = status_wrong;
+			}else{
+				var rfc_box = document.getElementsByName("Ecom_User_ID")[0];
+				rfc_box.value = response.answer;
+				status_image.src = status_ready;
+			}
 		});
 	});
 }

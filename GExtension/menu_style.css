@@ -1,6 +1,6 @@
 /*Classes*/
 .fapp_frame_contents{
-	width: 250px;
+	width: 350px;
 	transition: width 0.5s ease-in;
 	float: left;
 	overflow: hidden;
@@ -23,17 +23,43 @@
 	transition: transform 0.5s ease-in;
 }
 
+.fapp_category_container{
+	width: 100%;
+	height: 35px;
+	float: left;
+	padding: 10px 25px;
+	overflow: hidden;
+}
+
+.fapp_category_container p{
+	font-size: 20pt;
+	color: #eaeaea;
+	margin: 0px;
+	border-bottom: thin #eaeaea solid;
+}
+
+.fapp_data_container{
+	width: 100%;
+	height: 50px;
+	float: left;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+.fapp_data_container::-webkit-scrollbar { width: 0 !important }
+
 /*IDs*/
 #fapp_main_panel{
 	height: 95vh;
 	border: none;
-	background-color: rgba(124,194,175,0.8);
+	background-color: rgba(124,194,175,0.9);
 	position: relative;
 	float: right;
+	/*If screen gets shorter something like a min-width will be needed!!*/
 	display: table;
 }
 
 #fapp_frame_manipulate, #fapp_frame_contents{
+	border-right: solid white thin;
 	display: table-cell;
 }
 
@@ -46,12 +72,32 @@
 
 #fapp_hide_holder{
 	width: 100%;
-	height: 100px;
+	height: 60px;
 	padding: 5px;
 	background: url("chrome.extension.getURL('IMGs/hide_unnactive.png')")
 }
 
 #fapp_logo_holder{
 	width: 100%;
+}
+
+#fapp_status_holder{
+	width: 100%;
+	height: 50px;
+	padding: 10px;
+}
+
+#fapp_contents_heading{
+	width: 100%;
+	height: 50px;
+	float: left;
+	border-bottom: solid thin white;
+	color: white;
+	font-size: 26pt;
 	overflow: hidden;
+}
+
+#fapp_contents_heading p{
+	margin: 0px;
+	padding: 0px 15px; 
 }

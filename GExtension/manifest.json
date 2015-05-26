@@ -16,7 +16,8 @@
   	"run_at":"document_end"
   }],
   "web_accessible_resources": [
-    "IMGs/*.png"
+    "IMGs/*.png",
+    "IMGs/*.gif"
   ],
   "background": {
   	"scripts": ["background.js"],
