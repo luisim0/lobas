@@ -4,12 +4,12 @@ var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
 var status_ready = chrome.extension.getURL("IMGs/ready.png");
 var status_loading = chrome.extension.getURL("IMGs/loading.gif");
 var status_wrong = chrome.extension.getURL("IMGs/wrong.png");
-
+var fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
 //Functions
 function build_menu(){
 	var menu = document.createElement('div');
 	menu.id = 'fapp_main_panel';
-	menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate'/></div><div id='fapp_status_holder'><img src='' id='fapp_status'/></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'/></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'></div>";
+	menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate' width='40' height='40'></div><div id='fapp_status_holder'><img src='' id='fapp_status' height='30' width='30'></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><div id='fapp_contents_heading'><p>Menú Principal</p></div><div id='fapp_cat_0' class='fapp_category_container'><p>Perfil</p></div><div class='fapp_data_container'></div><div id='fapp_cat_1' class='fapp_category_container'><p>Registro de RFCs</p></div><div class='fapp_data_container'><a id='test'>Place RFC</a></div><div id='fapp_cat_2' class='fapp_category_container'><p>Descargar</p></div><div class='fapp_data_container_populated'></div></div>";
 	
 	//Insert structure
 	document.body.appendChild(menu);
@@ -17,54 +17,9 @@ function build_menu(){
 	//Place/edit images
 	var hide_button = document.getElementById("fapp_hide_button"); 
 	hide_button.src = hide_unnactive_URL;
-	hide_button.width = "40"; hide_button.height = "40";
-	
 	var status_image = document.getElementById("fapp_status");
 	status_image.src = status_ready;
-	status_image.height = "30";
-	status_image.width = "30";
-	
-	document.getElementById("fapp_logo").src = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
-	
-	//Title, recycle menu
-	menu = document.createElement("div");
-	menu.id = "fapp_contents_heading";
-	menu.innerHTML = "<p>Menú Principal</p>";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	
-	//Profile management
-	menu = document.createElement("div");
-	menu.id = "fapp_cat_0";
-	menu.className = "fapp_category_container";
-	menu.innerHTML = "<p>Información de Cuenta</p>";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	//Contents div
-	menu = document.createElement("div");
-	menu.className = "fapp_data_container";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	
-	//RFC Registry
-	menu = document.createElement("div");
-	menu.id = "fapp_cat_1";
-	menu.className = "fapp_category_container";
-	menu.innerHTML = "<p>Registro de RFCs</p>";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	//Contents div
-	menu = document.createElement("div");
-	menu.className = "fapp_data_container";
-	menu.innerHTML = "<a id='test'>Place RFC</a>";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	
-	//Explorer Settings
-	menu = document.createElement("div");
-	menu.id = "fapp_cat_2";
-	menu.className = "fapp_category_container";
-	menu.innerHTML = "<p>Descargar</p>";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
-	//Contents div
-	menu = document.createElement("div");
-	menu.className = "fapp_data_container";
-	document.getElementById("fapp_frame_contents").appendChild(menu);
+	document.getElementById("fapp_logo").src = fapp_logo;
 }
 
 function add_listeners(){
