@@ -55,7 +55,7 @@
 
 .fapp_data_container_populated{
 	width: 100%;
-	height: calc(99vh - 55px*4);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
+	height: calc(98vh - 55px*4);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
 	transition: height 0.5s ease-out;
 	transition-delay: 0.5s;
 	margin-left: 25px;
@@ -69,7 +69,7 @@
 
 /*IDs*/
 #fapp_main_panel{
-	height: 99vh;
+	height: 98vh;
 	border: none;
 	background-color: rgba(124,194,175,0.9);
 	position: relative;
@@ -85,7 +85,7 @@
 
 #fapp_frame_manipulate{
 	width: 50px;
-	height: 99vh;/*This should be modified once chrome allows global variables. This must match main frame's height*/
+	height: 98vh;/*This should be modified once chrome allows global variables. This must match main frame's height*/
 	text-align: left;
 	float: left;
 }
