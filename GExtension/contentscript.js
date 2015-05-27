@@ -66,7 +66,11 @@ function add_listeners(){
 		//Change the status image
 		status_image.src = status_loading;
 		//Send image to background
-		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/pruebas.php","data":[]}');
+		
+		//var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/pruebas.php","data":[]}');
+		//var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"http://facturapp.eu.pn/login.php","data":[{"name":"Username","value":"UTE150219H68"},{"name":"Password","value":"latiendita"}]}');
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/getClients.php","data":[]}');
+		
 		chrome.extension.sendMessage(jsoned,function(response){
 			if(response.answer == 'Error'){
 				status_image.src = status_wrong;

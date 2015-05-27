@@ -9,8 +9,8 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 		//Message
 		var method = message.method;
 		var resdata = "";
-		for(single in message.data){
-			resdata = resdata + single.name + "=" + single.value + "&";
+		for(i = 0; i < message.data.length; i++){
+			resdata = resdata + message.data[i].name + "=" + message.data[i].value + "&"; 
 		}
 		resdata = resdata.substring(0, resdata.length - 1);//Remove the last &
 		
