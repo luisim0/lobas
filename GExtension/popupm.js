@@ -6,7 +6,7 @@ var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&op
 function main(){
 	chrome.tabs.getSelected(null, function(e){
 		var status = document.getElementById("status");
-		if (satlink.localeCompare(e.url) == 0) {
+		if(satlink.localeCompare(e.url) == 0){
 			status.innerHTML = "Sí es la puta página";
 		}else{
 			status.innerHTML = "Hay que usar botón SAT";
@@ -18,9 +18,6 @@ function main(){
 function loadSATPage(e){
 	chrome.tabs.create({url:satlink});
 }
-
-//Callbacks
-
 
 //Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
