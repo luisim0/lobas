@@ -17,7 +17,8 @@
   }],
   "web_accessible_resources": [
     "IMGs/*.png",
-    "IMGs/*.gif"
+    "IMGs/*.gif",
+    "/*.html"
   ],
   "background": {
   	"scripts": ["background.js"],
