@@ -7,10 +7,22 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 		req.onerror = function(){sendResponse({answer:'Error'});};
 		
 		//Message
-		req.open("GET", "http://facturapp.eu.pn/pruebas.php", true);
-		req.send();
+		var method = message.method;
+		var resdata = "";
+		for(single in message.data){
+			resdata = resdata + single.name + "=" + single.value + "&";
+		}
+		resdata = resdata.substring(0, resdata.length - 1);//Remove the last &
 		
-		//Por si te andas pasando de goloso
+		if(method == "GET"){
+			req.open("GET", message.url + "?" + resdata, true);
+			req.send();
+		}else if(method == "POST"){
+			req.open("POST", message.url, true);
+			req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			req.send(resdata);
+		}
+		
 		return true;
 	}
 });

@@ -66,7 +66,8 @@ function add_listeners(){
 		//Change the status image
 		status_image.src = status_loading;
 		//Send image to background
-		chrome.extension.sendMessage({action:'get_php'},function(response){
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/pruebas.php","data":[]}');
+		chrome.extension.sendMessage(jsoned,function(response){
 			if(response.answer == 'Error'){
 				status_image.src = status_wrong;
 			}else{
