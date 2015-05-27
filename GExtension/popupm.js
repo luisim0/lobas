@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
   	main();
 });
 
+//Ask for session active
 var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
 chrome.extension.sendMessage(jsoned,function(response){
 	if(response.answer == 'Error'){
