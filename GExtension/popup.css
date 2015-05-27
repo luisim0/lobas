@@ -1,8 +1,49 @@
 /*TAGS*/
 body{
 	width: 250px;
+	margin: 10px;
+	background-color: black;
 }
 
 /*CLASSES*/
+.fapp_ext_nologged{
+	width: 100%;
+	height: 150px;
+	border-radius: 10px 20px 10px;
+}
 
+.fapp_ext_logged{
+	width: 100%;
+	height: 150px;
+	border-radius: 10px 20px 10px;
+}
 /*IDs*/
+#fapp_ext_title{
+	width: 100%;
+	height: 35px;
+	background-color: #7CC2AF;
+	border-radius: 10px 20px 0px 0px;
+	text-align: center;
+}
+
+#fapp_ext_contents{
+	width: 100%;
+	height: calc(150px - 35px); /*fapp_ext_logged - fapp_ext_title*/
+	background-color: #eaeaea;
+	/*background-color: #BCFFED;*/
+	border-radius: 0px 0px 10px 20px;
+}
+
+#fapp_ext_inputs{
+	height: 80px;
+	padding: 5px 30px;
+}
+
+#fapp_ext_inputs p{
+	margin: 0px;
+}
+
+#fapp_ext_logger{
+	padding-right: 30px;
+	text-align: right;
+}

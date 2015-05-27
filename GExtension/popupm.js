@@ -4,14 +4,8 @@ var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&op
 
 //Initialize
 function main(){
-	chrome.tabs.getSelected(null, function(e){
-		var status = document.getElementById("status");
-		if(satlink.localeCompare(e.url) == 0){
-			status.innerHTML = "Sí es la puta página";
-		}else{
-			status.innerHTML = "Hay que usar botón SAT";
-		};
-	});
+	//Place images
+	document.getElementById("fapp_ext_logo").src = chrome.extension.getURL("IMGs/facturapp_logo.png");
 }
 
 //Functions
@@ -23,6 +17,16 @@ function loadSATPage(e){
 document.addEventListener('DOMContentLoaded', function() {
 	//Listeners
   	document.getElementById("open_SAT").addEventListener('click', loadSATPage);
+  	document.getElementById("fapp_ext_login").addEventListener('click',function(){
+  		var form = document.getElementById("fapp_ext_form");
+  		form.submit();
+  	});
+  	document.getElementById("fapp_ext_pss").addEventListener('keypress',function(e){
+  		if(e.keyCode == 13){
+  			var form = document.getElementById("fapp_ext_form");
+  			form.submit();
+  		}
+  	});
   	//Initialize
   	main();
 });
