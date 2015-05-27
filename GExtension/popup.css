@@ -6,18 +6,14 @@ body{
 }
 
 /*CLASSES*/
-.fapp_ext_nologged{
+
+/*IDs*/
+#fapp_ext_logged{
 	width: 100%;
 	height: 150px;
 	border-radius: 10px 20px 10px;
 }
 
-.fapp_ext_logged{
-	width: 100%;
-	height: 150px;
-	border-radius: 10px 20px 10px;
-}
-/*IDs*/
 #fapp_ext_title{
 	width: 100%;
 	height: 35px;
