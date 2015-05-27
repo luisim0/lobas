@@ -38,6 +38,7 @@
 .fapp_category_container p{
 	font-size: 20pt;
 	color: #eaeaea;
+	transition: color 0.5s linear;
 	margin: 0px;
 	border-bottom: thin #eaeaea solid;
 	cursor: pointer;

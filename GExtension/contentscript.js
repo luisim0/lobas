@@ -54,7 +54,7 @@ function add_listeners(){
 			var cat_links = document.getElementsByClassName(this.className);
 			for(j = 0; j < n; j++){
 				(j != i) ? cat_links[j].nextSibling.className = "fapp_data_container" : cat_links[j].nextSibling.className = "fapp_data_container_populated";
-				(j != i) ? cat_links[j].style.backgroundColor = "" : cat_links[j].style.backgroundColor = "rgba(115,151,191,0.4)";
+				(j != i) ? cat_links[j].firstChild.style.color = "#eaeaea" : cat_links[j].firstChild.style.color = "#16495C";
 			}
 		});
 	}
