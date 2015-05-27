@@ -1,5 +1,6 @@
 //Globals
 var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
+var sidebar_URL = chrome.extension.getURL("/sidebar.html");
 var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
 var status_ready = chrome.extension.getURL("IMGs/ready.png");
 var status_loading = chrome.extension.getURL("IMGs/loading.gif");
@@ -9,20 +10,30 @@ var office_generic = chrome.extension.getURL("IMGs/office.png");
 
 //Functions
 function build_menu(){
-	var menu = document.createElement('div');
-	menu.id = 'fapp_main_panel';
-	menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate' width='40' height='40'></div><div id='fapp_status_holder'><img src='' id='fapp_status' height='30' width='30'></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><div id='fapp_cat_0' class='fapp_category_container'><p>Perfil</p></div><div class='fapp_data_container'><div id='fapp_profile_basics'><div class='fapp_office_icon'><img src='' id='fapp_office_logo' width='35' height='35'></div><div class='fapp_office_data'><div class='fapp_office_name'>COMPANY NAME S.A. de C.V.</div><div class='fapp_office_RFC'>UTE150219H68</div><div class='fapp_office_offices'><a id=''>1</a> Empresa</div></div></div></div><div id='fapp_cat_1' class='fapp_category_container'><p>Registro de RFCs</p></div><div class='fapp_data_container'></div><div id='fapp_cat_2' class='fapp_category_container'><p>Descargar</p></div><div class='fapp_data_container_populated'><a id='test'>Place RFC</a></div></div>";
-	
-	//Insert structure
-	document.body.appendChild(menu);
-	
-	//Place/edit images
-	var hide_button = document.getElementById("fapp_hide_button"); 
-	hide_button.src = hide_unnactive_URL;
-	var status_image = document.getElementById("fapp_status");
-	status_image.src = status_ready;
-	document.getElementById("fapp_logo").src = fapp_logo;
-	document.getElementById("fapp_office_logo").src = office_generic;
+	var get_side_bar = new XMLHttpRequest();
+	get_side_bar.open("GET", sidebar_URL, true);
+	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	get_side_bar.onload = function(argument){
+		var menu = document.createElement('div');
+		menu.id = 'fapp_main_panel';
+		menu.innerHTML = get_side_bar.responseText.replace(/[\r\n\t]/g, "");
+		
+		//Insert structure
+		document.body.appendChild(menu);
+		
+		//Place/edit images
+		var hide_button = document.getElementById("fapp_hide_button"); 
+		hide_button.src = hide_unnactive_URL;
+		var status_image = document.getElementById("fapp_status");
+		status_image.src = status_ready;
+		document.getElementById("fapp_logo").src = fapp_logo;
+		document.getElementById("fapp_office_logo").src = office_generic;
+		
+		//Add Listeners
+		add_listeners();
+	};
+	get_side_bar.send();
+	//menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate' width='40' height='40'></div><div id='fapp_status_holder'><img src='' id='fapp_status' height='30' width='30'></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><div id='fapp_cat_0' class='fapp_category_container'><p>Perfil</p></div><div class='fapp_data_container'><div id='fapp_profile_basics'><div class='fapp_office_icon'><img src='' id='fapp_office_logo' width='35' height='35'></div><div class='fapp_office_data'><div class='fapp_office_name'>COMPANY NAME S.A. de C.V.</div><div class='fapp_office_RFC'>UTE150219H68</div><div class='fapp_office_offices'><a id=''>1</a> Empresa</div></div></div></div><div id='fapp_cat_1' class='fapp_category_container'><p>Registro de RFCs</p></div><div class='fapp_data_container'></div><div id='fapp_cat_2' class='fapp_category_container'><p>Descargar</p></div><div class='fapp_data_container_populated'><a id='test'>Place RFC</a></div></div>";
 }
 
 function add_listeners(){
@@ -106,7 +117,6 @@ function check_page(){
 //Main!
 if(check_page()){
 	build_menu();
-	add_listeners();
 }/*else{
 	var ind = document.getElementsByClassName("contrasena")[0].getElementsByTagName("a")[0];
 	ind.click();

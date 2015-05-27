@@ -1,27 +1,12 @@
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
 <html>
   <head>
     <meta charset="UTF-8">
     <title>Facturapp Extension</title>
-    <!--
-      - JavaScript and HTML must be in separate files: see our Content Security
-      - Policy documentation[1] for details and explanation.
-      -
-      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
-     -->
-     <style>
-         body{
-             width:150px;
-         }
-     </style>
     <script src="popupm.js"></script>
+    <link href="popup.css" rel="stylesheet" type="text/css">
   </head>
-  <body>
+  <body id="fapp_popup_body">
     <a href="" id="open_SAT">SAT</a>
     <p id="status">Nothing yet!</p>
   </body>
