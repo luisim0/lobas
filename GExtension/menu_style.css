@@ -1,6 +1,6 @@
 /*Classes*/
 .fapp_frame_contents{
-	width: 350px;
+	width: 300px;
 	height: 100%;
 	transition: width 0.5s ease-in;
 	float: left;
@@ -27,13 +27,12 @@
 .fapp_category_container{
 	width: 100%;
 	height: 35px;
+	background-color: none;
+	transition: background-color 0.5s ease-out;
 	float: left;
 	padding: 10px 25px;
+	padding-bottom: 5px;
 	overflow: hidden;
-}
-
-.fapp_category_container p{
-	cursor: pointer;
 }
 
 .fapp_category_container p{
@@ -41,6 +40,7 @@
 	color: #eaeaea;
 	margin: 0px;
 	border-bottom: thin #eaeaea solid;
+	cursor: pointer;
 }
 
 .fapp_data_container{
@@ -55,7 +55,7 @@
 
 .fapp_data_container_populated{
 	width: 100%;
-	height: calc(98vh - 55px*4);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
+	height: calc(98vh - 55px*3);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
 	transition: height 0.5s ease-out;
 	transition-delay: 0.5s;
 	margin-left: 25px;
@@ -119,21 +119,6 @@
 	padding: 10px;
 }
 
-#fapp_contents_heading{
-	width: 100%;
-	height: 50px;
-	float: left;
-	border-bottom: solid thin white;
-	color: white;
-	font-size: 26pt;
-	overflow: hidden;
-}
-
-#fapp_contents_heading p{
-	margin: 0px;
-	padding: 0px 15px; 
-}
-
 #fapp_hide_button{
 	cursor: pointer;
 }
@@ -141,6 +126,11 @@
 #fapp_profile_basics{
 	width: 100%;
 	height: 45px;
+	overflow: hidden;
 	background-color: rgba(255,255,255,0.1);
 	border: thin dashed white;
+}
+
+#fapp_profile_basics{
+	margin: 5px 0px;
 }
