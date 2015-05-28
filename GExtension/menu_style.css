@@ -1,36 +1,137 @@
 /*Classes*/
-.fapp_main_panel{
+.fapp_frame_contents{
 	width: 300px;
-	height: 95vh;
-	border: none;
-	background-color: rgba(124,194,175,0.8);
-	position: relative;
-	float: right;
+	height: 100%;
+	transition: width 0.5s ease-in;
+	float: left;
+	overflow: hidden;
+}
+
+.fapp_frame_contents_collapsed{
+	width: 0px;
+	transition: width 0.5s ease-out;
+	float: left;
+	overflow: hidden;
+}
+
+.rotate{
+	transform: rotate(180deg);
+	transition: transform 0.5s ease-out;
+}
+
+.no_rotate{
+	transform: rotate(0deg);
+	transition: transform 0.5s ease-in;
+}
+
+.fapp_category_container{
+	width: 100%;
+	height: 35px;
+	background-color: none;
+	transition: background-color 0.5s ease-out;
+	float: left;
+	padding: 10px 25px;
+	padding-bottom: 5px;
+	overflow: hidden;
+}
+
+.fapp_category_container p{
+	font-size: 20pt;
+	color: #eaeaea;
+	transition: color 0.5s linear;
+	margin: 0px;
+	border-bottom: thin #eaeaea solid;
+	cursor: pointer;
+}
+
+.fapp_data_container{
+	width: 100%;
+	height: 0px;
+	transition: height 0.5s ease-in;
+	margin-left: 25px;
+	float: left;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+
+.fapp_data_container_populated{
+	width: 100%;
+	height: calc(98vh - 55px*3);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
+	transition: height 0.5s ease-out;
+	transition-delay: 0.5s;
+	margin-left: 25px;
+	float: left;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+
+.fapp_data_container::-webkit-scrollbar { width: 0 !important }
+.fapp_data_container_populated::-webkit-scrollbar { width: 0 !important }
+
+.fapp_office_icon, .fapp_office_data, .fapp_office_RFC, .fapp_office_offices{
+	float: left;
+}
+
+.fapp_office_offices{
+	padding-left: 20px;
+}
+
+.fapp_office_icon, .fapp_office_data{
+	padding: 5px;
 }
 
 /*IDs*/
 #fapp_main_panel{
+	height: 98vh;
+	border: none;
+	background-color: rgba(124,194,175,0.9);
+	position: relative;
+	float: right;
+	/*If screen gets shorter something like a min-width will be needed!! Perhaps modifying the body of the page.. ¿?*/
 	display: table;
 }
 
 #fapp_frame_manipulate, #fapp_frame_contents{
+	border-right: solid white thin;
 	display: table-cell;
 }
 
 #fapp_frame_manipulate{
 	width: 50px;
-	height: 100%;
-	border-right: thin solid #c4c4b7;
-	text-align: center;
+	height: 98vh;/*This should be modified once chrome allows global variables. This must match main frame's height*/
+	text-align: left;
 	float: left;
 }
 
 #fapp_hide_holder{
 	width: 100%;
-	height: 100px;
+	height: 60px;
+	padding: 5px;
+	background: url("chrome.extension.getURL('IMGs/hide_unnactive.png')")
 }
 
 #fapp_logo_holder{
 	width: 100%;
-	padding-right: 10px;
+}
+
+#fapp_status_holder{
+	width: 100%;
+	height: 50px;
+	padding: 10px;
+}
+
+#fapp_hide_button{
+	cursor: pointer;
+}
+
+#fapp_profile_basics{
+	width: 100%;
+	height: 45px;
+	overflow: hidden;
+	background-color: rgba(255,255,255,0.1);
+	border: thin dashed white;
+}
+
+#fapp_profile_basics{
+	margin: 5px 0px;
 }

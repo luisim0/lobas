@@ -1,0 +1,63 @@
+/*TAGS*/
+body{
+	width: 250px;
+	margin: 10px;
+	background-color: #dfdfdf;
+}
+
+/*CLASSES*/
+.fapp_ext_wait{
+	width: 100%;
+	padding: 0px 100px; 	
+}
+
+/*IDs*/
+#fapp_ext_logged{
+	width: 100%;
+	height: 150px;
+	border-radius: 10px 30px 10px;
+	border: dashed black thin;
+}
+
+#fapp_ext_title{
+	width: 100%;
+	height: 35px;
+	background-color: #7CC2AF;
+	border-radius: 10px 30px 0px 0px;
+	text-align: center;
+}
+
+#fapp_ext_contents{
+	width: 100%;
+	height: calc(150px - 35px); /*fapp_ext_logged - fapp_ext_title*/
+	background-color: #eaeaea;
+	/*background-color: #BCFFED;*/
+	border-radius: 0px 0px 10px 30px;
+}
+
+#fapp_ext_inputs{
+	height: 80px;
+	padding: 5px 30px;
+}
+
+#fapp_ext_inputs p{
+	margin: 0px;
+}
+
+#fapp_ext_logger{
+	padding-right: 30px;
+	text-align: right;
+}
+#fapp_ext_link_container{
+	padding: 10px 30px;
+	color: #000040;
+	font-size: 12pt;
+}
+
+#fapp_ext_gotosat{
+	cursor: pointer;
+}
+
+#fapp_ext_gotohell{
+	cursor: pointer;
+}
