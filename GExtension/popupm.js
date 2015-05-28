@@ -39,6 +39,7 @@ function is_session_active(){
 					document.getElementById("fapp_ext_login").addEventListener('click',function(){
 				  		var form = document.getElementById("fapp_ext_form");
 				  		form.submit();
+				  		/////////////////////////////////////////////////////////////////
 				  		//Replace by function
 				  	});
 				  	document.getElementById("fapp_ext_signin").addEventListener('click',function(){
@@ -48,6 +49,7 @@ function is_session_active(){
 				  		if(e.keyCode == 13){
 				  			var form = document.getElementById("fapp_ext_form");
 				  			form.submit();
+				  			////////////////////////////////////////////////////////////
 				  			//Replace by function
 				  		}
 				  	});
