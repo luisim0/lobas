@@ -24,5 +24,32 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 		}
 		
 		return true;
+	}else if(message.action == 'get_error'){
+		switch(parseInt(message.code)){
+			case 1:
+				sendResponse({answer:"Hay un error en su cuenta: ¡No tiene clientes asignados! Por favor póngase en contacto con Facturapp para solucionarlo"});
+				break;
+			case 2:
+				sendResponse({answer:"El RFC no está registrado como usuario de Facturapp"});
+				break;
+			case 3:
+				sendResponse({answer:"Su password es incorrecto"});
+				break;
+			case 4:
+				sendResponse({answer:"No existe el cliente que se buscó"});
+				break;
+			case 5:
+				sendResponse({answer:"Su sesión ha caducado. Por favor inicie sesión nuevamente"});
+				break;
+			case 6:
+				sendResponse({answer:"No ha registrado un password para este cliente o no ha sido posible recuperarlo. Registre un password o inténtelo más tarde"});
+				break;
+			case 7:
+				sendResponse({answer:"El cliente que ha intentado registrar ya se encuentra en su lista de clientes"});
+				break;
+			default:
+				sendResponse({answer:"Código de error no reconocido"});
+				break;
+		}
 	}
 });
