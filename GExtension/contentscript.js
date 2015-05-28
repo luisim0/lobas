@@ -1,6 +1,6 @@
 //Globals
 var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
-var sidebar_URL = chrome.extension.getURL("/sidebar.html");
+var sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
 var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
 var status_ready = chrome.extension.getURL("IMGs/ready.png");
 var status_loading = chrome.extension.getURL("IMGs/loading.gif");
@@ -33,7 +33,6 @@ function build_menu(){
 		add_listeners();
 	};
 	get_side_bar.send();
-	//menu.innerHTML = "<div id='fapp_frame_manipulate'><div id='fapp_hide_holder'><img src='' id='fapp_hide_button' class='no_rotate' width='40' height='40'></div><div id='fapp_status_holder'><img src='' id='fapp_status' height='30' width='30'></div><div id='fapp_logo_holder'><img src='' id='fapp_logo'></div></div><div id='fapp_frame_contents' class='fapp_frame_contents'><div id='fapp_cat_0' class='fapp_category_container'><p>Perfil</p></div><div class='fapp_data_container'><div id='fapp_profile_basics'><div class='fapp_office_icon'><img src='' id='fapp_office_logo' width='35' height='35'></div><div class='fapp_office_data'><div class='fapp_office_name'>COMPANY NAME S.A. de C.V.</div><div class='fapp_office_RFC'>UTE150219H68</div><div class='fapp_office_offices'><a id=''>1</a> Empresa</div></div></div></div><div id='fapp_cat_1' class='fapp_category_container'><p>Registro de RFCs</p></div><div class='fapp_data_container'></div><div id='fapp_cat_2' class='fapp_category_container'><p>Descargar</p></div><div class='fapp_data_container_populated'><a id='test'>Place RFC</a></div></div>";
 }
 
 function add_listeners(){
