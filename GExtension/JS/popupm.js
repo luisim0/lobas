@@ -7,10 +7,7 @@ var fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo.png");
 var links_url = chrome.extension.getURL("/SrcHTML/quicklinks.html");
 var icon_in = chrome.extension.getURL("Icons/icon48.png");
 var icon_out = chrome.extension.getURL("Icons/logout48.png");
-
-/////////////////Important nonte///////////////////
 var retain_rfc = "";//This could read from chrome storage as a default value...
-/////////////////Important nonte///////////////////
 
 //Functions
 function call_wait(){
@@ -55,6 +52,13 @@ function getInTouch(){//Send the form without using submit traditional way
 			var code = status[1];
 			var status = status[0];
 			if(status == 'Scs'){//Success: logged
+				var save = {}; save["RFC"] = usname;
+				chrome.storage.sync.set(save,function(){
+					chrome.storage.sync.get("RFC", function(data) {
+						debugger;
+						alert(data["RFC"]);
+					});
+				});
 				call_page(0);
 			}else if(status == 'Err'){//Known error
 				call_page(parseInt(code));
