@@ -3,6 +3,18 @@ var tabid = -1;
 var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
 
 //Functions
+function call_page(){
+	//Wait phase
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}');
+	jsoned.url = chrome.extension.getURL("/SrcHTML/wait.html");
+	chrome.extension.sendMessage(jsoned,function(response){
+		document.body.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
+		document.getElementById("fapp_ext_wait_image").src = chrome.extension.getURL("IMGs/loading.gif");
+		//Ask for page
+		is_session_active();
+	});
+}
+
 function is_session_active(){
 	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
 	chrome.extension.sendMessage(jsoned,function(response){
@@ -46,9 +58,24 @@ function is_session_active(){
 					//Change body
 					document.body.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
 					
+					//Place images
+					document.getElementById("fapp_ext_link_sat").src = chrome.extension.getURL("Icons/icon48.png")
+					document.getElementById("fapp_ext_link_logout").src = chrome.extension.getURL("Icons/logout48.png")
+					
 					//Listeners if links
-  					document.getElementById("open_SAT").addEventListener('click', function(){
+  					document.getElementById("fapp_ext_gotosat").addEventListener('click', function(){
   						chrome.tabs.create({url:satlink});
+  						window.close();
+  					});
+  					document.getElementById("fapp_ext_gotohell").addEventListener('click', function(){
+  						var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/logout.php","data":[]}');
+						chrome.extension.sendMessage(jsoned,function(response){
+							if(response.answer == 'Error'){
+								alert("La sesión no pudo finalizar. Cierre el explorador para salir de la sesión manualmente.");
+							}else{
+								window.close();
+							}
+						});
   					});
 				});
 			}
@@ -58,8 +85,5 @@ function is_session_active(){
 
 //Event Listeners
 document.addEventListener('DOMContentLoaded', function() {
-	//Wait phase
-	document.getElementById("fapp_ext_wait_image").src = chrome.extension.getURL("IMGs/loading.gif");
-	//Ask for page
-	is_session_active();
+	call_page();
 });
