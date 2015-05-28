@@ -1,4 +1,5 @@
 Pantalla principal: https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0
+Remember to modify the reloading property of sidebar!!!
 RFC: name="Ecom_User_ID"
 PASS: name="Ecom_Password"
 BOTON: name="submit";
