@@ -148,7 +148,7 @@ function is_session_active(login_code){
 							usname.value = retain_rfc;
 							uspass.value = "";
 							uspass.style.borderColor = "red";
-							uspass.foucs()
+							uspass.focus();
 							break;
 						default:
 							usname.value = "";
