@@ -21,9 +21,7 @@ function build_menu(){
 		//Insert structure
 		document.body.appendChild(menu);
 		
-		//Place/edit images
-		var hide_button = document.getElementById("fapp_hide_button"); 
-		hide_button.src = hide_unnactive_URL;
+		//Place/edit images		
 		var status_image = document.getElementById("fapp_status");
 		status_image.src = status_ready;
 		document.getElementById("fapp_logo").src = fapp_logo;
@@ -37,7 +35,7 @@ function build_menu(){
 
 function add_listeners(){
 	//Button to hide/show the sidepanel
-	var hide_button = document.getElementById("fapp_hide_button");
+	var hide_button = document.getElementById("fapp_hide_holder");
 	hide_button.addEventListener('click',function(){
 		var main_panel = document.getElementById("fapp_frame_contents"); 
 		if (main_panel.className == "fapp_frame_contents"){
@@ -47,12 +45,6 @@ function add_listeners(){
 			main_panel.className = "fapp_frame_contents";
 			hide_button.className = "no_rotate";
 		}
-	});
-	hide_button.addEventListener('mouseover',function(){
-		hide_button.src = hide_active_URL;
-	});
-	hide_button.addEventListener('mouseout',function(){
-		hide_button.src = hide_unnactive_URL;
 	});
 	
 	//Category selectors
