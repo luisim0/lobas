@@ -8,6 +8,9 @@ var links_url = chrome.extension.getURL("/SrcHTML/quicklinks.html");
 var icon_in = chrome.extension.getURL("Icons/icon48.png");
 var icon_out = chrome.extension.getURL("Icons/logout48.png");
 var retain_rfc = "";//This could read from chrome storage as a default value...
+chrome.storage.sync.get("RFC",function(data){
+	retain_rfc = data["RFC"];
+});
 
 //Functions
 function call_wait(){
@@ -53,12 +56,7 @@ function getInTouch(){//Send the form without using submit traditional way
 			var status = status[0];
 			if(status == 'Scs'){//Success: logged
 				var save = {}; save["RFC"] = usname;
-				chrome.storage.sync.set(save,function(){
-					chrome.storage.sync.get("RFC", function(data) {
-						debugger;
-						alert(data["RFC"]);
-					});
-				});
+				chrome.storage.sync.set(save);
 				call_page(0);
 			}else if(status == 'Err'){//Known error
 				call_page(parseInt(code));
@@ -86,6 +84,8 @@ function is_session_active(login_code){
 					document.body.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
 					var usname = document.getElementsByName("Username")[0];
 					var uspass = document.getElementsByName("Password")[0];
+					usname.style.fontFamily = 'Arial';
+					if(retain_rfc != undefined){uspass.focus();usname.value = retain_rfc;}else{usname.focus();}
 					
 					//Place images
 					document.getElementById("fapp_ext_logo").src = fapp_logo;

@@ -25,7 +25,7 @@
 }
 
 .fapp_category_container{
-	width: 100%;
+	width: calc(100% - 2*25px);/*Due to padding*/
 	height: 35px;
 	background-color: none;
 	transition: background-color 0.5s ease-out;
@@ -45,7 +45,7 @@
 }
 
 .fapp_data_container{
-	width: 100%;
+	width: calc(100% - 25px);/*Due to margin*/
 	height: 0px;
 	transition: height 0.5s ease-in;
 	margin-left: 25px;
@@ -55,7 +55,7 @@
 }
 
 .fapp_data_container_populated{
-	width: 100%;
+	width: calc(100% - 25px);/*Due to margin*/
 	height: calc(97vh - 55px*3);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
 	transition: height 0.5s ease-out;
 	transition-delay: 0.5s;
@@ -76,8 +76,34 @@
 	padding-left: 20px;
 }
 
-.fapp_office_icon, .fapp_office_data{
+.fapp_office_icon{
+	width: 40px;
+	height: 40px;
+	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio.png");
+	background-repeat: none;
+	text-align: center;
+	margin: 2.5px;
+}
+
+.fapp_office_icon:hover{
+	width: 40px;
+	height: 40px;
+	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio2.png");
+	background-repeat: none;
+	text-align: center;
+	margin: 2.5px;
+}
+
+.fapp_office_data{
 	padding: 5px;
+}
+
+.fapp_menu_top{
+	width: calc(100% - 25px);/*Due to margin*/
+	margin-left: 25px;
+	height: 36px;
+	border-bottom: solid white thin;
+	float: left;
 }
 
 /*IDs*/
@@ -138,7 +164,7 @@
 }
 
 #fapp_profile_basics{
-	width: 100%;
+	width: calc(100% - 2px);/*Due to borders*/
 	height: 45px;
 	overflow: hidden;
 	background-color: rgba(255,255,255,0.1);

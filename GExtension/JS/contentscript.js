@@ -6,7 +6,7 @@ var status_ready = chrome.extension.getURL("IMGs/ready.png");
 var status_loading = chrome.extension.getURL("IMGs/loading.gif");
 var status_wrong = chrome.extension.getURL("IMGs/wrong.png");
 var fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
-var office_generic = chrome.extension.getURL("IMGs/office.png");
+var office_generic = chrome.extension.getURL("IMGs/edificio.png");
 
 //Functions
 function build_menu(){
@@ -20,12 +20,14 @@ function build_menu(){
 		
 		//Insert structure
 		document.body.appendChild(menu);
+		chrome.storage.sync.get("RFC",function(data){
+			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
+		});
 		
 		//Place/edit images		
 		var status_image = document.getElementById("fapp_status");
 		status_image.src = status_ready;
 		document.getElementById("fapp_logo").src = fapp_logo;
-		document.getElementById("fapp_office_logo").src = office_generic;
 		
 		//Add Listeners
 		add_listeners();
@@ -47,16 +49,27 @@ function add_listeners(){
 		}
 	});
 	
-	//Category selectors
+	//Category selectors - I think this must be restated!!
 	var cat_links = document.getElementsByClassName("fapp_category_container");
 	var n = cat_links.length;
 	for(i = 0; i < n; i++){
 		cat_links[i].addEventListener('click',function(){
 			var i = parseInt(this.id.split("_")[2]);
-			var cat_links = document.getElementsByClassName(this.className);
+			var siblings = this.parentNode.children;var n = siblings.length;var del = [];
+			for(j = 0; j < n; j++){("fapp_data_container_populated".indexOf(siblings[j].className) == 0) ? del.push(siblings[j]) : null;}
+			
+			var cat_links = document.getElementsByClassName(this.className);n = cat_links.length;
+			
 			for(j = 0; j < n; j++){
-				(j != i) ? cat_links[j].nextSibling.className = "fapp_data_container" : cat_links[j].nextSibling.className = "fapp_data_container_populated";
-				(j != i) ? cat_links[j].firstChild.style.color = "#eaeaea" : cat_links[j].firstChild.style.color = "#16495C";
+				if(j != i){
+					del[j].className = "fapp_data_container";
+					cat_links[j].firstChild.style.color = "#eaeaea";
+					cat_links[j].firstChild.style.cursor = "pointer";
+				}else{
+					del[j].className = "fapp_data_container_populated";
+					cat_links[j].firstChild.style.color = "#16495C";
+					cat_links[j].firstChild.style.cursor = "default";
+				}
 			}
 		});
 	}
