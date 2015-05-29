@@ -99,11 +99,23 @@
 }
 
 .fapp_menu_top{
-	width: calc(100% - 25px);/*Due to margin*/
-	margin-left: 25px;
-	height: 36px;
+	width: calc(100% - 50px);/*Due to margin*/
+	margin: 0px 25px;
+	height: 30px;
 	border-bottom: solid white thin;
 	float: left;
+	text-align: center;
+	display: table;
+	table-layout: fixed;
+	padding: 2px;
+}
+
+.fapp_menu_opholder{
+	display: table-cell;
+	height: 30px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
 /*IDs*/
@@ -173,4 +185,20 @@
 
 #fapp_profile_basics{
 	margin: 5px 0px;
+}
+
+#fapp_client_add{
+	height: 20px;
+	width: 20px;
+	margin: 5px calc(50% - 10px);
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/add.png");
+	background-repeat: no-repeat;
+}
+
+#fapp_client_edit{
+	height: 20px;
+	width: 20px;
+	margin: 5px calc(50% - 10px);
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edit.png");
+	background-repeat: no-repeat;
 }
