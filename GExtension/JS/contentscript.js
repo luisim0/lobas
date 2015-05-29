@@ -56,17 +56,20 @@ function add_listeners(){
 		cat_links[i].addEventListener('click',function(){
 			var i = parseInt(this.id.split("_")[2]);
 			var siblings = this.parentNode.children;var n = siblings.length;var del = [];
-			for(j = 0; j < n; j++){("fapp_data_container_populated".indexOf(siblings[j].className) == 0) ? del.push(siblings[j]) : null;}
+			for(j = 0; j < n; j++){(siblings[j].className.indexOf("fapp_data_container") == 0) ? del.push(siblings[j]) : null;}
 			
 			var cat_links = document.getElementsByClassName(this.className);n = cat_links.length;
+			var has_menu = [1]; //Add here all categories which has a menu 
 			
 			for(j = 0; j < n; j++){
 				if(j != i){
+					(has_menu.indexOf(j) > -1) ? cat_links[j].nextSibling.className = "fapp_menu_hidden" : null;
 					del[j].className = "fapp_data_container";
 					cat_links[j].firstChild.style.color = "#eaeaea";
 					cat_links[j].firstChild.style.cursor = "pointer";
 				}else{
-					del[j].className = "fapp_data_container_populated";
+					(has_menu.indexOf(j) > -1) ? cat_links[j].nextSibling.className = "fapp_menu_active" : null;
+					(has_menu.indexOf(j) > -1) ? del[j].className = "fapp_data_container_wmenu" : del[j].className = "fapp_data_container_populated";
 					cat_links[j].firstChild.style.color = "#16495C";
 					cat_links[j].firstChild.style.cursor = "default";
 				}
