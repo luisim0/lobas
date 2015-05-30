@@ -67,6 +67,7 @@
 
 .fapp_data_container::-webkit-scrollbar { width: 0 !important }
 .fapp_data_container_populated::-webkit-scrollbar { width: 0 !important }
+.fapp_data_container_wmenu::-webkit-scrollbar { width: 0 !important }
 
 .fapp_data_container_wmenu{
 	width: calc(100% - 25px);/*Due to margin*/
@@ -97,12 +98,7 @@
 }
 
 .fapp_office_icon:hover{
-	width: 40px;
-	height: 40px;
 	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio2.png");
-	background-repeat: none;
-	text-align: center;
-	margin: 2.5px;
 }
 
 .fapp_office_data{
@@ -114,7 +110,6 @@
 	margin: 0px 25px;
 	height: 30px;
 	float: left;
-	text-align: center;
 	display: table;
 	table-layout: fixed;
 	padding: 5px 2px;
@@ -131,8 +126,10 @@
 }
 
 .fapp_search_bar{
-	height: 30px;
+	width: calc(100% - 50px);/*Due to margin*/
 	margin: 0px 25px;
+	height: 30px;
+	float: left;
 	display: table;
 	padding: 5px 0px;
 	border-bottom: solid #c0c0c0 thin;
@@ -146,7 +143,7 @@
 
 .fapp_search_input input{
 	border-radius: 20px;
-	margin: 0px 20px;
+	margin-left: 20px;
 	width: 140px;
 	float: left;
 }
@@ -156,9 +153,11 @@
 	display: table-cell;
 	height: 30px;
 	width: 30px;
+	margin-right: 20px;
 	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
 	background-repeat: no-repeat;
 	background-position: center;
+	cursor: pointer;
 }
 
 .fapp_search_magn{
@@ -171,13 +170,7 @@
 }
 
 .fapp_search_magn:hover{
-	height: 30px;
-	width: 30px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/search.png");
-	background-repeat: no-repeat;
-	background-position: center;
 	transform: scale(0.85,0.85);
-	transition: transform 0.2s linear;
 }
 
 .fapp_menu_active{
@@ -196,6 +189,85 @@
 	transition-delay: 0.5s;
 }
 
+.fapp_client_box{
+	width: calc(100% - 25px);/*Due to margin*/
+	height: 50px;
+	margin: 3px 0px;
+	margin-right: 25px;
+	border: white dashed thin;
+	overflow: hidden;
+}
+
+.fapp_client_box_selected{
+	width: calc(100% - 25px);/*Due to margin*/
+	height: 50px;
+	margin: 4px 1px;
+	margin-right: 26px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/selected.png");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fapp_client_icon{
+	height: 40px;
+	width: 40px;
+	margin: 5px;
+	float: left;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/client.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	cursor: pointer;
+}
+
+.fapp_client_hat{
+	height: 40px;
+	width: 40px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hat.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	transition: transform 0.2s linear;
+	transform-origin: 20% 30%;
+}
+
+.fapp_client_hat:hover{
+	transform: rotate(-20deg);
+}
+
+.fapp_client_info{
+	margin-left: 50px;
+	width: 190px;/*Due to padding*/
+	height: 40px;/*Due to padding*/
+	padding: 5px;
+}
+
+.fapp_client_name{
+	width: 100%;
+	overflow: hidden;
+}
+
+.fapp_client_name_holder{
+	margin: 0;
+	padding: 0;
+	color: white;
+    font-size: 12pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	white-space: nowrap;
+	position: relative;
+}
+
+.fapp_client_name_holder:hover{
+	overflow: visible;
+	animation-name: flyText;
+	animation-duration: 4s;
+}
+
+.fapp_client_RFC{
+	margin: 0;
+	padding: 0;
+	color: white;
+    font-size: 12pt;
+}
 /*IDs*/
 #fapp_main_panel{
 	height: 97vh;
@@ -229,12 +301,7 @@
 }
 
 #fapp_hide_holder:hover{
-	width: 100%;
-	height: 60px;
-	padding: 0px;
 	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hide_active.png");
-	background-repeat: no-repeat;
-	background-position: center;
 }
 
 #fapp_logo_holder{
@@ -272,18 +339,12 @@
 	margin: 0px calc(50% - 15px);
 	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/add.png");
 	background-repeat: no-repeat;
-	transform: rotate(0deg);
 	transition: transform 0.15s linear;
+	cursor: pointer;
 }
 
 #fapp_client_add:hover{
-	height: 30px;
-	width: 30px;
-	margin: 0px calc(50% - 15px);
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/add.png");
-	background-repeat: no-repeat;
 	transform: rotate(180deg);
-	transition: transform 0.15s linear;
 }
 
 #fapp_client_edit{
@@ -292,6 +353,7 @@
 	margin: 0px calc(50% - 15px);
 	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edit.png");
 	background-repeat: no-repeat;
+	cursor: pointer;
 }
 
 #fapp_client_edit:hover{
@@ -320,6 +382,7 @@
 	margin: 0px calc(50% - 15px);
 	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/bin.png");
 	background-repeat: no-repeat;
+	cursor: pointer;
 }
 
 /*Animations*/
@@ -339,4 +402,10 @@
 	60%{transform: rotate(-10deg) translateY(-3px);}
 	70%{transform: rotate(0deg) translateY(-3px);}
 	100%{transform: translateY(0px);}
+}
+
+@keyframes flyText{
+	0%{transform: translateX(0);}
+	95%{transform: translateX(-100%);}
+	100%{transform: translateX(0);}
 }

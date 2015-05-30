@@ -1,12 +1,14 @@
 //Globals
 var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
 var sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
+var client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
 var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
 var status_ready = chrome.extension.getURL("IMGs/ready.png");
 var status_loading = chrome.extension.getURL("IMGs/loading.gif");
 var status_wrong = chrome.extension.getURL("IMGs/wrong.png");
 var fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
 var office_generic = chrome.extension.getURL("IMGs/edificio.png");
+var json_arr;
 
 //Functions
 function build_menu(){
@@ -29,8 +31,41 @@ function build_menu(){
 		status_image.src = status_ready;
 		document.getElementById("fapp_logo").src = fapp_logo;
 		
-		//Add Listeners
-		add_listeners();
+		//Change status loading
+		status_image.src = status_loading;
+		
+		//Insert Clients
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
+		chrome.extension.sendMessage(jsoned,function(response){//Obtenemos clientes
+			if(response.answer == 'Error'){
+				status_image.src = status_wrong;
+				alert("No se ha procesado correctamente la respuesta del servidor, por favor refresce la página para intentarlo de nuevo.");
+			}else{
+				json_arr = JSON.parse(response.answer);
+				jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = client_box;
+				chrome.extension.sendMessage(jsoned,function(response){//Obtenemos template para el contenedor
+					if(response.answer == 'Error'){
+						alert("No se ha procesado correctamente la respuesta de la extensión, por favor refresce la página para intentarlo de nuevo.");
+						status_image.src = status_wrong;
+					}else{
+						var n = json_arr.length;
+						var client_data = document.getElementById("fdc1");
+						for(i = 0;i < n;i++){
+							var par_div = document.createElement("div");
+							par_div.className = "fapp_client_box"; par_div.id = json_arr[i].id;
+							par_div.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
+							par_div.getElementsByClassName("fapp_client_name_holder")[0].innerHTML = json_arr[i].name;
+							par_div.getElementsByClassName("fapp_client_RFC")[0].innerHTML = json_arr[i].rfc;
+							client_data.appendChild(par_div);
+						}
+						add_listeners();
+						status_image.src = status_ready;					
+					}
+				});
+			}
+		});
+		
+		//Add Listeners, this is performed inside the call for clients
 	};
 	get_side_bar.send();
 }
@@ -74,6 +109,14 @@ function add_listeners(){
 					cat_links[j].firstChild.style.cursor = "default";
 				}
 			}
+		});
+	}
+	
+	//Client selection - recycle above variables - Clients must be loaded at the begining!!!!
+	cat_links = document.getElementsByClassName("fapp_client_box"); n = cat_links.length;
+	for(i = 0;i < n;i++){
+		cat_links[i].addEventListener('click',function(){
+			(this.className == "fapp_client_box") ? this.className = "fapp_client_box_selected" : this.className = "fapp_client_box";
 		});
 	}
 	
