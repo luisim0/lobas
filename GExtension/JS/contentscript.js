@@ -126,12 +126,24 @@ function add_listeners(){
 	}
 	
 	//Client selection - recycle above variables - Clients must be loaded at the begining!!!!
-	cat_links = document.getElementsByClassName("fapp_client_box"); n = cat_links.length;
+	cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 	for(i = 0;i < n;i++){
 		cat_links[i].addEventListener('click',function(){
-			(this.className == "fapp_client_box") ? this.className = "fapp_client_box_selected" : this.className = "fapp_client_box";
+			(this.parentNode.className == "fapp_client_box") ? this.parentNode.className = "fapp_client_box_selected" : this.parentNode.className = "fapp_client_box";
 		});
 	}
+	
+	//Selection tools - uses the same cat_links variable above!! Select all and none
+	document.getElementById("fapp_client_all").addEventListener('click',function(){
+		for(i = 0;i < n;i++){
+			cat_links[i].parentNode.className = "fapp_client_box_selected";
+		}
+	});
+	document.getElementById("fapp_client_none").addEventListener('click',function(){
+		for(i = 0;i < n;i++){
+			cat_links[i].parentNode.className = "fapp_client_box";
+		}
+	});
 }
 
 function check_page(){
