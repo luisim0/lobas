@@ -1,3 +1,5 @@
+var icon_in = chrome.extension.getURL("Icons/icon128.png");
+
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 	if(message.action == 'get_php'){
 		var req = new XMLHttpRequest();
@@ -51,5 +53,13 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 				sendResponse({answer:"Código de error no reconocido"});
 				break;
 		}
+	}else if(message.action == 'prompt_message'){
+		var opt = {
+		  type: "basic",
+		  title: "Inicie sesión en Facturapp",
+		  message: "Inicie sesión en Facturapp usando el ícono en la barra de navegación.",
+		  iconUrl: icon_in
+		};
+		chrome.notifications.create(opt);
 	}
 });

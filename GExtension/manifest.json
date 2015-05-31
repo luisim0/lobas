@@ -15,7 +15,7 @@
   	"128": "/Icons/icon128.png"
   },
   "content_scripts":[{
-  	"matches":["https://cfdiau.sat.gob.mx/*"],
+  	"matches":["https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*"],
   	"js":["/JS/contentscript.js"],
   	"css":["/CSS/menu_style.css"],
   	"run_at":"document_end"
@@ -31,6 +31,7 @@
   },
   "permissions": [
   	"storage",
+  	"notifications",
     "tabs",
     "https://ajax.googleapis.com/",
     "http://facturapp.eu.pn/pruebas.php"

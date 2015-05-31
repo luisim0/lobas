@@ -1,5 +1,11 @@
+//SAT URLs
+var iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
+var weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";
+var valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
+var logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
+var valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+
 //Global Vars
-var satlink = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
 var wait_url = chrome.extension.getURL("/SrcHTML/wait.html");
 var loading_gif = chrome.extension.getURL("IMGs/loading.gif");
 var login_url = chrome.extension.getURL("/SrcHTML/loginform.html");
@@ -57,13 +63,71 @@ function getInTouch(){//Send the form without using submit traditional way
 			if(status == 'Scs'){//Success: logged
 				var save = {}; save["RFC"] = usname;
 				chrome.storage.sync.set(save);
-				call_page(0);
+				chrome.tabs.query({},function(tabs){
+					var n = tabs.length;
+					for(i = 0;i < n;i++){
+						(tabs[i].url.indexOf(valid_sat_token) == 0) ? chrome.tabs.update(tabs[i].id,{url:tabs[i].url}) : null;
+					}
+					focus_sat_page();
+				});
 			}else if(status == 'Err'){//Known error
 				call_page(parseInt(code));
 			}else{//Server is answering shit
 				alert("Las respuestas del servidor no están procesándose adecuadamente. Por favor póngase en contacto con Facturapp para corregir este error");
 				call_page(0);
 			}
+		}
+	});
+}
+
+function focus_sat_page(){
+	chrome.tabs.query({},function(tabs){
+		var n = tabs.length;var pagefound = false;
+		for(i = 0;i < n;i++){
+			if(tabs[i].url.indexOf(valid_sat_token) == 0){
+				pagefound = true;
+				chrome.tabs.update(tabs[i].id,{active:true});
+			}
+		}
+		(!pagefound) ? chrome.tabs.create({url:valid_sat_login}) : null;
+		window.close(); 
+	});
+}
+
+function login_text_check(usname, uspass){
+	if(usname.value != "" && uspass.value != ""){
+		getInTouch();
+	}else if(usname.value == ""){
+		usname.placeholder= "Escriba su RFC";
+		usname.focus();
+	}else if(uspass.value == ""){
+		uspass.placeholder= "Escriba su Password";
+		uspass.focus();
+	}
+}
+
+function add_login_listeners(usname, uspass){
+	//Add listeners
+	document.getElementById("fapp_ext_login").addEventListener('click',function(){
+		login_text_check(usname, uspass);
+	});
+	document.getElementById("fapp_ext_signin").addEventListener('click',function(){
+		alert("Actualmente en desarrollo   ;)");
+	});
+	usname.addEventListener('keypress',function(e){
+		if(e.keyCode == 13){
+			login_text_check(usname, uspass);
+		}
+		if(this.style.borderColor != ""){
+			this.style.borderColor = "";
+		}
+	});
+	uspass.addEventListener('keypress',function(e){
+		if(e.keyCode == 13){
+			login_text_check(usname, uspass);
+		}
+		if(this.style.borderColor != ""){
+			this.style.borderColor = "";
 		}
 	});
 }
@@ -89,54 +153,9 @@ function is_session_active(login_code){
 					
 					//Place images
 					document.getElementById("fapp_ext_logo").src = fapp_logo;
-					
-					//Add listeners
-					document.getElementById("fapp_ext_login").addEventListener('click',function(){
-						if(usname.value != "" && uspass.value != ""){
-							getInTouch();
-						}else if(usname.value == ""){
-							usname.placeholder= "Escriba su RFC";
-							usname.focus();
-						}else if(uspass.value == ""){
-							uspass.placeholder= "Escriba su Password";
-							uspass.focus();
-						}
-				  	});
-				  	document.getElementById("fapp_ext_signin").addEventListener('click',function(){
-				  		alert("Actualmente en desarrollo   ;)");
-				  	});
-				  	usname.addEventListener('keypress',function(e){
-				  		if(e.keyCode == 13){
-							if(usname.value != "" && uspass.value != ""){
-								getInTouch();
-							}else if(usname.value == ""){
-								usname.placeholder= "Escriba su RFC";
-								usname.focus();
-							}else if(uspass.value == ""){
-								uspass.placeholder= "Escriba su Password";
-								uspass.focus();
-							}
-						}
-						if(this.style.borderColor != ""){
-							this.style.borderColor = "";
-						}
-				  	});
-				  	uspass.addEventListener('keypress',function(e){
-				  		if(e.keyCode == 13){
-							if(usname.value != "" && uspass.value != ""){
-								getInTouch();
-							}else if(usname.value == ""){
-								usname.placeholder= "Escriba su RFC";
-								usname.focus();
-							}else if(uspass.value == ""){
-								uspass.placeholder= "Escriba su Password";
-								uspass.focus();
-							}
-						}
-						if(this.style.borderColor != ""){
-							this.style.borderColor = "";
-						}
-				  	});
+				  	
+				  	//Add listeners
+				  	add_login_listeners(usname, uspass);
 				  	
 				  	//Edit on error code
 					switch(parseInt(login_code)){
@@ -179,8 +198,7 @@ function is_session_active(login_code){
 					
 					//Listeners if links
   					document.getElementById("fapp_ext_gotosat").addEventListener('click', function(){
-  						chrome.tabs.create({url:satlink});
-  						window.close();
+  						focus_sat_page();
   					});
   					document.getElementById("fapp_ext_gotohell").addEventListener('click', function(){
   						var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/logout.php","data":[]}');
@@ -188,7 +206,14 @@ function is_session_active(login_code){
 							if(response.answer == 'Error'){
 								alert("La sesión no pudo finalizar. Cierre el explorador para salir de la sesión manualmente.");
 							}else{
-								window.close();
+								//Reload to kill sidebar
+								chrome.tabs.query({},function(tabs){
+									var n = tabs.length;
+									for(i = 0;i < n;i++){
+										(tabs[i].url.indexOf(valid_sat_token) == 0) ? chrome.tabs.update(tabs[i].id,{url:tabs[i].url}) : null;
+									}
+									window.close();
+								});
 							}
 						});
   					});

@@ -1,3 +1,10 @@
+//SAT URLs
+var iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
+var weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";
+var valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
+var logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
+var valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+
 //Globals
 var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
 var sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
@@ -119,39 +126,16 @@ function add_listeners(){
 			(this.className == "fapp_client_box") ? this.className = "fapp_client_box_selected" : this.className = "fapp_client_box";
 		});
 	}
-	
-	//This is a php message test
-	var test_link = document.getElementById("test");
-	var status_image = document.getElementById("fapp_status");
-	test_link.addEventListener('click',function(){
-		//Change the status image
-		status_image.src = status_loading;
-		//Send image to background
-		
-		//var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/pruebas.php","data":[]}');
-		//var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"http://facturapp.eu.pn/login.php","data":[{"name":"Username","value":"UTE150219H68"},{"name":"Password","value":"latiendita"}]}');
-		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/getClients.php","data":[]}');
-		//var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/logout.php","data":[]}');
-		chrome.extension.sendMessage(jsoned,function(response){
-			if(response.answer == 'Error'){
-				status_image.src = status_wrong;
-			}else{
-				var rfc_box = document.getElementsByName("Ecom_User_ID")[0];
-				rfc_box.value = response.answer;
-				status_image.src = status_ready;
-			}
-		});
-	});
 }
 
 function check_page(){
-	if(window.location.href.indexOf("https://cfdiau.sat.gob.mx/nidp/app?") == 0){
+	if(window.location.href.indexOf(iqaccess_url) == 0){
 		//We reached the netiq access manager... :(
-		window.location.replace("https://portalcfdi.facturaelectronica.sat.gob.mx/");
+		window.location.replace(logged_sat_url);
 		return false;
-	}else if(window.location.href.indexOf("https://cfdiau.sat.gob.mx/nidp/lofc.jsp") == 0){
+	}else if(window.location.href.indexOf(weird_sat_login) == 0){
 		//Ended session
-		window.location.replace("https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0");
+		window.location.replace(valid_sat_login);
 		return false;
 	}/*else{
 		var ind = document.getElementsByClassName("contrasena")[0].getElementsByTagName("a")[0];
@@ -161,13 +145,38 @@ function check_page(){
 			return false;
 		}
 	}*/
+	is_session_active();
 	return true;
 }
 
-//Main!
-if(check_page()){
-	build_menu();
-}/*else{
-	var ind = document.getElementsByClassName("contrasena")[0].getElementsByTagName("a")[0];
-	ind.click();
-}*/
+function is_session_active(){
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
+			//window.close();
+			return false;
+		}else{
+			var yesno = response.answer.split("_")[1];
+			if(yesno == "0"){//There's no session
+				//instruct to open session
+				if(window.location.href.indexOf(valid_sat_token) == 0){
+					jsoned = JSON.parse('{"action":"prompt_message"}');
+					chrome.extension.sendMessage(jsoned);
+				}
+				return false;
+			}else{//There's session
+				build_menu();
+				return true;
+			}
+		}
+	});
+}
+
+//Event listeners
+chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
+	alert("Aquí oyendo!");
+});
+
+//Main! - It goes check_page() >> is_session_active() >> build_menu()
+check_page();
