@@ -1,6 +1,5 @@
 <div id='fapp_frame_manipulate'>
 	<div id='fapp_hide_holder'>
-		<img src='' id='fapp_hide_button' class='no_rotate' width='40' height='40'>
 	</div>
 	<div id='fapp_status_holder'>
 		<img src='' id='fapp_status' height='30' width='30'>
@@ -13,33 +12,66 @@
 	<div id='fapp_cat_0' class='fapp_category_container'>
 		<p>Perfil</p>
 	</div>
-	<div class='fapp_data_container'>
+	<div class='fapp_data_container' id="fdc0">
 		<div id='fapp_profile_basics'>
 			<div class='fapp_office_icon'>
-				<img src='' id='fapp_office_logo' width='35' height='35'>
 			</div>
 			<div class='fapp_office_data'>
 				<div class='fapp_office_name'>
-					COMPANY NAME S.A. de C.V.
+					COMPANY WITH A LONG NAME S.A. de C.V.
 				</div>
-				<div class='fapp_office_RFC'>
-					UTE150219H68
-				</div>
-				<div class='fapp_office_offices'>
-					<a id=''>1</a> Empresa
+				<div class="fapp_office_table">
+    				<div class='fapp_office_RFC'>
+    					RFC123456T78
+    				</div>
+    				<div class='fapp_office_offices'>
+    					<a id='fapp_num_clients'>1</a> Empresa(s)
+    				</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	<div id='fapp_cat_1' class='fapp_category_container'>
-		<p>Registro de RFCs</p>
-	</div>
-	<div class='fapp_data_container'>
-	</div>
+		<p>Clientes</p>
+	</div>	
+	<div id="fapp_menu_options" class="fapp_menu_hidden">
+		<div class="fapp_search_bar">
+			<div class="fapp_search_input">
+				<input type="text" id="fapp_search_input_field"/>
+			</div>
+			<div class="fapp_search_button">
+				<div class="fapp_search_magn"></div>
+			</div>
+	    </div>
+	    <div class="fapp_menu_table">
+    		<div class="fapp_menu_top">
+    	        <div class="fapp_menu_opholder">
+    	            <div id="fapp_client_add"></div>
+    	        </div>
+    	        <div class="fapp_menu_opholder">
+    	            <div id="fapp_client_edit"></div>
+    	        </div>
+    	        <div class="fapp_menu_opholder">
+    	            <div id="fapp_client_bin">
+    	            	<div id="fapp_client_lid"></div>
+    	            </div>
+    	        </div>
+    	    </div>
+    	    <div class="fapp_menu_selectors">
+                <div class="fapp_menu_opholder">
+                    <div id="fapp_client_all"></div>
+                </div>
+                <div class="fapp_menu_opholder">
+                    <div id="fapp_client_none"></div>
+                </div>
+            </div>
+	    </div>
+    </div>   
+	<div class='fapp_data_container' id="fdc1"></div>
 	<div id='fapp_cat_2' class='fapp_category_container'>
 		<p>Descargar</p>
 	</div>
-	<div class='fapp_data_container_populated'>
+	<div class='fapp_data_container_populated' id="fdc2">
 		<a id='test'>Place RFC</a>
 	</div>
 </div>

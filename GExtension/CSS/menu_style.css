@@ -25,7 +25,7 @@
 }
 
 .fapp_category_container{
-	width: 100%;
+	width: calc(100% - 2*25px);/*Due to padding*/
 	height: 35px;
 	background-color: none;
 	transition: background-color 0.5s ease-out;
@@ -45,7 +45,7 @@
 }
 
 .fapp_data_container{
-	width: 100%;
+	width: calc(100% - 25px);/*Due to margin*/
 	height: 0px;
 	transition: height 0.5s ease-in;
 	margin-left: 25px;
@@ -55,8 +55,8 @@
 }
 
 .fapp_data_container_populated{
-	width: 100%;
-	height: calc(95vh - 55px*3);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
+	width: calc(100% - 25px);/*Due to margin*/
+	height: calc(97vh - 55px*3);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
 	transition: height 0.5s ease-out;
 	transition-delay: 0.5s;
 	margin-left: 25px;
@@ -67,27 +67,249 @@
 
 .fapp_data_container::-webkit-scrollbar { width: 0 !important }
 .fapp_data_container_populated::-webkit-scrollbar { width: 0 !important }
+.fapp_data_container_wmenu::-webkit-scrollbar { width: 0 !important }
 
-.fapp_office_icon, .fapp_office_data, .fapp_office_RFC, .fapp_office_offices{
+.fapp_data_container_wmenu{
+	width: calc(100% - 25px);/*Due to margin*/
+	height: calc(97vh - 55px*3 - 83px);/*This depends on the main height and each label height... variableeeeees!!! Pleeeeaseeee!!*/
+	transition: height 0.5s ease-out;
+	transition-delay: 0.5s;
+	margin-left: 25px;
 	float: left;
+	overflow-y:auto;
+	overflow-x:hidden;
+}
+
+.fapp_office_table{
+	display: table;
+	width: 100%;
+}
+
+.fapp_office_RFC{
+	display: table-cell;
+	text-align: left;
 }
 
 .fapp_office_offices{
-	padding-left: 20px;
+	display: table-cell;
+	text-align: right;	
 }
 
 .fapp_office_icon, .fapp_office_data{
+	float: left;
+}
+
+.fapp_office_icon{
+	width: calc(100% - 5px);/*Due to margin*/
+	height: 40px;
+	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	margin: 2.5px;
+}
+
+.fapp_office_icon:hover{
+	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio2.png");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fapp_office_data{
+	width: calc(100% - 10px);/*padding*/
+	padding: 5px;
+	font-size: 12pt;
+	color: black;
+}
+
+.fapp_office_name{
+	text-align: center;
+	font-weight: bold;
+}
+
+.fapp_menu_top{
+	width: 120px;
+	height: 30px;
+	display: table-cell;
+	padding: 5px 2px;
+}
+
+.fapp_menu_opholder{
+	display: table-cell;
+	height: 100%;
+	width: 40px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fapp_search_bar{
+	width: calc(100% - 50px);/*Due to margin*/
+	margin: 0px 25px;
+	height: 30px;
+	float: left;
+	display: table;
+	padding: 5px 0px;
+	border-bottom: solid #c0c0c0 thin;
+	overflow: hidden;
+}
+
+.fapp_search_input{
+	height: 30px;
+	display: table-cell;
+}
+
+.fapp_search_input input{
+	border-radius: 20px;
+	margin-left: 20px;
+	width: 140px;
+	float: left;
+}
+
+.fapp_search_button{
+	float: left;
+	display: table-cell;
+	height: 30px;
+	width: 30px;
+	margin-right: 20px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	cursor: pointer;
+}
+
+.fapp_search_magn{
+	height: 30px;
+	width: 30px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/search.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	transition: transform 0.2s linear;
+}
+
+.fapp_search_magn:hover{
+	transform: scale(0.85,0.85);
+}
+
+.fapp_menu_active{
+	overflow: hidden;
+	height: 83px;
+	width: 100%;
+	transition: height 0.2s ease-in;
+	transition-delay: 0.5s;
+}
+
+.fapp_menu_hidden{
+	overflow: hidden;
+	height: 0px;
+	width: 100%;
+	transition: height 0.2s ease-out;
+	transition-delay: 0.5s;
+}
+
+.fapp_client_box{
+	width: calc(100% - 25px);/*Due to margin*/
+	height: 50px;
+	margin: 3px 0px;
+	margin-right: 25px;
+	border: white dashed thin;
+	overflow: hidden;
+}
+
+.fapp_client_box_selected{
+	width: calc(100% - 25px);/*Due to margin*/
+	height: 50px;
+	margin: 4px 1px;
+	margin-right: 26px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/selected.png");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.fapp_client_icon{
+	height: 40px;
+	width: 40px;
+	margin: 5px;
+	float: left;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/client.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	cursor: pointer;
+}
+
+.fapp_client_hat{
+	height: 40px;
+	width: 40px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hat.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	transition: transform 0.2s linear;
+	transform-origin: 20% 30%;
+}
+
+.fapp_client_hat:hover{
+	transform: rotate(-20deg);
+}
+
+.fapp_client_info{
+	margin-left: 50px;
+	width: 190px;/*Due to padding*/
+	height: 40px;/*Due to padding*/
 	padding: 5px;
 }
 
+.fapp_client_name{
+	width: 100%;
+	overflow: hidden;
+}
+
+.fapp_client_name_holder{
+	margin: 0;
+	padding: 0;
+	color: white;
+    font-size: 12pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+	white-space: nowrap;
+	position: relative;
+}
+
+.fapp_client_name_holder:hover{
+	overflow: visible;
+	animation-name: flyText;
+	animation-duration: 4s;
+}
+
+.fapp_client_RFC{
+	margin: 0;
+	padding: 0;
+	color: white;
+    font-size: 12pt;
+}
+
+.fapp_menu_table{
+	display: table;
+	width: calc(250px - 10px);/*Padding*/
+	margin-left: 25px;
+	padding-left: 10px;
+	border-bottom: thin solid #c0c0c0;
+}
+
+.fapp_menu_selectors{
+	width: 80px;
+	height: 30px;
+	padding-left: 15px;
+	display: table-cell;
+	padding: 5px 2px;
+}
+
+
 /*IDs*/
 #fapp_main_panel{
-	height: 95vh;
+	height: 97vh;
 	border: none;
-	background-color: rgba(124,194,175,0.9);
+	background-color: rgba(40,115,181,0.8);
 	position: relative;
 	float: right;
-	/*If screen gets shorter something like a min-width will be needed!! Perhaps modifying the body of the page.. ¿?*/
 	display: table;
 }
 
@@ -98,7 +320,7 @@
 
 #fapp_frame_manipulate{
 	width: 50px;
-	height: 95vh;/*This should be modified once chrome allows global variables. This must match main frame's height*/
+	height: 97vh;/*This should be modified once chrome allows global variables. This must match main frame's height*/
 	text-align: left;
 	float: left;
 }
@@ -106,8 +328,14 @@
 #fapp_hide_holder{
 	width: 100%;
 	height: 60px;
-	padding: 5px;
-	background: url("chrome.extension.getURL('IMGs/hide_unnactive.png')")
+	padding: 0px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hide_unnactive.png");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+#fapp_hide_holder:hover{
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hide_active.png");
 }
 
 #fapp_logo_holder{
@@ -115,9 +343,11 @@
 }
 
 #fapp_status_holder{
-	width: 100%;
+	width: 50px;
 	height: 50px;
-	padding: 10px;
+	padding: 0px;
+	margin-top: 10px;
+	text-align: center;
 }
 
 #fapp_hide_button{
@@ -125,13 +355,126 @@
 }
 
 #fapp_profile_basics{
-	width: 100%;
-	height: 45px;
+	width: calc(100% - 2px - 25px);/*Due to borders and margin*/
+	margin-right: 25px;
 	overflow: hidden;
-	background-color: rgba(255,255,255,0.1);
+	background-color: rgba(255,255,255,0.5);
 	border: thin dashed white;
 }
 
 #fapp_profile_basics{
 	margin: 5px 0px;
+}
+
+#fapp_num_clients{
+	color: #ff0080;
+	font-size: 10pt;
+	cursor: pointer;
+}
+
+#fapp_client_add{
+	height: 30px;
+	width: 30px;
+	margin: 0px 5px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/add.png");
+	background-repeat: no-repeat;
+	transition: transform 0.15s linear;
+	cursor: pointer;
+}
+
+#fapp_client_add:hover{
+	transform: rotate(180deg);
+}
+
+#fapp_client_edit{
+	height: 30px;
+	width: 30px;
+	margin: 0px 5px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edit.png");
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#fapp_client_edit:hover{
+	animation-name: vibrate;
+	animation-duration: 0.1s;
+	animation-iteration-count: 2;
+}
+
+#fapp_client_lid{
+	height: 30px;
+	width: 30px;
+	margin: 0px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/lid.png");
+	background-repeat: no-repeat;
+	transform-origin: 50% 30%;
+}
+
+#fapp_client_lid:hover{
+	animation-name: movelid;
+	animation-duration: 0.5s;
+}
+
+#fapp_client_bin{
+	height: 30px;
+	width: 30px;
+	margin: 0px 5px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/bin.png");
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#fapp_client_all{
+	height: 30px;
+	width: 30px;
+	margin: 0px 5px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/all.png");
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#fapp_client_none{
+	height: 30px;
+	width: 30px;
+	margin: 0px 5px;
+	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/none.png");
+	background-repeat: no-repeat;
+	cursor: pointer;
+}
+
+#fapp_client_all:hover{
+	animation-name: vibrate;
+	animation-duration: 0.1s;
+	animation-iteration-count: 2;
+}
+
+#fapp_client_none:hover{
+	animation-name: vibrate;
+	animation-duration: 0.1s;
+	animation-iteration-count: 2;
+}
+
+/*Animations*/
+@keyframes vibrate{
+	0%{transform: rotate(0deg);}
+	25%{transform: rotate(15deg);}
+	50%{transform: rotate(0deg);}
+	75%{transform: rotate(-15deg);}
+	100%{transform: rotate(0deg);}
+}
+
+@keyframes movelid{
+	0%{transform: translateY(0px);}
+	30%{transform: translateY(-3px);}
+	40%{transform: rotate(10deg) translateY(-3px);}
+	50%{transform: rotate(0deg) translateY(-3px);}
+	60%{transform: rotate(-10deg) translateY(-3px);}
+	70%{transform: rotate(0deg) translateY(-3px);}
+	100%{transform: translateY(0px);}
+}
+
+@keyframes flyText{
+	0%{transform: translateX(0);}
+	95%{transform: translateX(-100%);}
+	100%{transform: translateX(0);}
 }
