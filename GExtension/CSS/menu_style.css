@@ -102,14 +102,14 @@
 .fapp_office_icon{
 	width: calc(100% - 5px);/*Due to margin*/
 	height: 40px;
-	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio.png");
+	background: url("chrome-extension://__MSG_@@extension_id__/IMGs/edificio.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	margin: 2.5px;
 }
 
 .fapp_office_icon:hover{
-	background: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edificio2.png");
+	background: url("chrome-extension://__MSG_@@extension_id__/IMGs/edificio2.png");
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -137,7 +137,7 @@
 	display: table-cell;
 	height: 100%;
 	width: 40px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/circle.png");
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -171,7 +171,7 @@
 	height: 30px;
 	width: 30px;
 	margin-right: 20px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/circle.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/circle.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	cursor: pointer;
@@ -180,7 +180,7 @@
 .fapp_search_magn{
 	height: 30px;
 	width: 30px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/search.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/search.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	transition: transform 0.2s linear;
@@ -220,7 +220,7 @@
 	height: 50px;
 	margin: 4px 1px;
 	margin-right: 26px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/selected.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/selected.png");
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -230,7 +230,7 @@
 	width: 40px;
 	margin: 5px;
 	float: left;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/client.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/client.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	cursor: pointer;
@@ -239,7 +239,7 @@
 .fapp_client_hat{
 	height: 40px;
 	width: 40px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hat.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/hat.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	transition: transform 0.2s linear;
@@ -329,13 +329,13 @@
 	width: 100%;
 	height: 60px;
 	padding: 0px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hide_unnactive.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/hide_unnactive.png");
 	background-repeat: no-repeat;
 	background-position: center;
 }
 
 #fapp_hide_holder:hover{
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/hide_active.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/hide_active.png");
 }
 
 #fapp_logo_holder{
@@ -376,7 +376,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px 5px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/add.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/add.png");
 	background-repeat: no-repeat;
 	transition: transform 0.15s linear;
 	cursor: pointer;
@@ -390,7 +390,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px 5px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/edit.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/edit.png");
 	background-repeat: no-repeat;
 	cursor: pointer;
 }
@@ -405,7 +405,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/lid.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/lid.png");
 	background-repeat: no-repeat;
 	transform-origin: 50% 30%;
 }
@@ -419,7 +419,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px 5px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/bin.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/bin.png");
 	background-repeat: no-repeat;
 	cursor: pointer;
 }
@@ -428,7 +428,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px 5px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/all.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/all.png");
 	background-repeat: no-repeat;
 	cursor: pointer;
 }
@@ -437,7 +437,7 @@
 	height: 30px;
 	width: 30px;
 	margin: 0px 5px;
-	background-image: url("chrome-extension://aedmikeccddnhfhibahejjgkjealhnei/IMGs/none.png");
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/none.png");
 	background-repeat: no-repeat;
 	cursor: pointer;
 }
