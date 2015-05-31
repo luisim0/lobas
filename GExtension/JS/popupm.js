@@ -132,6 +132,34 @@ function add_login_listeners(usname, uspass){
 	});
 }
 
+function login_error_handling(usname, uspass, login_code){
+	switch(parseInt(login_code)){
+		case 0:
+			break;
+		case 2:
+			usname.value = "";
+			uspass.value = "";
+			usname.style.borderColor = "red";
+			usname.focus();
+			break;
+		case 3:
+			usname.value = retain_rfc;
+			uspass.value = "";
+			uspass.style.borderColor = "red";
+			uspass.focus();
+			break;
+		default:
+			usname.value = "";
+			usname.foucs();
+			uspass.value = "";
+			var jsoned = JSON.parse('{"action":"get_error","code":""}');
+			jsoned.code = String(login_code);
+			chrome.extension.sendMessage(jsoned,function(response){
+				alert(response.answer);
+			});
+	}
+}
+
 function is_session_active(login_code){
 	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
 	chrome.extension.sendMessage(jsoned,function(response){
@@ -158,31 +186,7 @@ function is_session_active(login_code){
 				  	add_login_listeners(usname, uspass);
 				  	
 				  	//Edit on error code
-					switch(parseInt(login_code)){
-						case 0:
-							break;
-						case 2:
-							usname.value = "";
-							uspass.value = "";
-							usname.style.borderColor = "red";
-							usname.focus();
-							break;
-						case 3:
-							usname.value = retain_rfc;
-							uspass.value = "";
-							uspass.style.borderColor = "red";
-							uspass.focus();
-							break;
-						default:
-							usname.value = "";
-							usname.foucs();
-							uspass.value = "";
-							var jsoned = JSON.parse('{"action":"get_error","code":""}');
-							jsoned.code = String(login_code);
-							chrome.extension.sendMessage(jsoned,function(response){
-								alert(response.answer);
-							});
-					}
+					login_error_handling(usname, uspass, login_code);
 				});
 			}else{//There is already a session
 				login_page = links_url;

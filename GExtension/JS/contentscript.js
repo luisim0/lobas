@@ -49,6 +49,7 @@ function build_menu(){
 				alert("No se ha procesado correctamente la respuesta del servidor, por favor refresce la página para intentarlo de nuevo.");
 			}else{
 				json_arr = JSON.parse(response.answer);
+				document.getElementById("fapp_num_clients").innerHTML = json_arr.length;
 				jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = client_box;
 				chrome.extension.sendMessage(jsoned,function(response){//Obtenemos template para el contenedor
 					if(response.answer == 'Error'){
@@ -89,6 +90,11 @@ function add_listeners(){
 			main_panel.className = "fapp_frame_contents";
 			hide_button.className = "no_rotate";
 		}
+	});
+	
+	//Link #of clients
+	document.getElementById("fapp_num_clients").addEventListener('click',function(){
+		document.getElementById("fapp_cat_1").click();
 	});
 	
 	//Category selectors - I think this must be restated!!
