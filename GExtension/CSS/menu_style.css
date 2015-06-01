@@ -174,7 +174,13 @@
 	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/circle.png");
 	background-repeat: no-repeat;
 	background-position: center;
-	cursor: pointer;
+	cursor: default;
+}
+
+.fapp_search_button p{
+	color: white;
+	text-align: center;
+	margin: 6.5px 0px;
 }
 
 .fapp_search_magn{
@@ -213,16 +219,34 @@
 	margin-right: 25px;
 	border: white dashed thin;
 	overflow: hidden;
+	transition: height 0.4s linear;
+	
 }
 
-.fapp_client_box_selected{
+.fapp_client_selected{/*fapp_client_box_selected*/
 	width: calc(100% - 25px);/*Due to margin*/
 	height: 50px;
 	margin: 4px 1px;
 	margin-right: 26px;
+	border: none;
+	overflow: hidden;
 	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/selected.png");
 	background-repeat: no-repeat;
 	background-position: center;
+}
+
+.fapp_client_hidden{
+	height: 0px;
+	margin: 0px 1px;
+	border: none;
+	transition: height 0.2s linear;
+}
+
+.fapp_client_highlighted{
+	margin: 3px 0px;
+	margin-right: 25px;
+	border: white solid thin;
+	overflow: hidden;
 }
 
 .fapp_client_icon{
