@@ -6,15 +6,16 @@ var logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
 var valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
 
 //Globals
-var hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
-var sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
-var client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
-var hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
-var status_ready = chrome.extension.getURL("IMGs/ready.png");
-var status_loading = chrome.extension.getURL("IMGs/loading.gif");
-var status_wrong = chrome.extension.getURL("IMGs/wrong.png");
-var fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
-var office_generic = chrome.extension.getURL("IMGs/edificio.png");
+const hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
+const sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
+const client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
+const popup_box = chrome.extension.getURL("/SrcHTML/client_input.html");
+const hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
+const status_ready = chrome.extension.getURL("IMGs/ready.png");
+const status_loading = chrome.extension.getURL("IMGs/loading.gif");
+const status_wrong = chrome.extension.getURL("IMGs/wrong.png");
+const fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
+const office_generic = chrome.extension.getURL("IMGs/edificio.png");
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
@@ -111,7 +112,7 @@ function add_listeners(){
 		}
 	});
 	
-	//Link #of clients (the number in the )
+	//Link #of clients (the number in the profile category)
 	document.getElementById("fapp_num_clients").addEventListener('click',function(){
 		document.getElementById("fapp_cat_1").click();
 	});
@@ -246,6 +247,17 @@ function add_listeners(){
 				sel_index = 0;
 		}
 	});
+	
+	//Client Add edit delete
+	document.getElementById("fapp_client_add").addEventListener('click',function(){
+		throw_popup('add');
+	});
+	document.getElementById("fapp_client_edit").addEventListener('click',function(){
+		throw_popup('edit');
+	});
+	document.getElementById("fapp_client_bin").addEventListener('click',function(){
+		alert("delete");
+	});
 }
 
 function animate_scroll_down(ratio){
@@ -311,6 +323,43 @@ function is_session_active(){
 			}
 		}
 	});
+}
+
+function throw_popup(addedit){
+	var black_scrn = document.createElement("div");
+	black_scrn.className = "fapp_cover_page";
+	
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = popup_box;
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("No fue posible procesar la información, por favor intente más tarde");
+		}else{
+			black_scrn.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
+			document.body.appendChild(black_scrn);
+			//Add handlers
+			document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(){
+				document.body.removeChild(black_scrn);
+			});
+			document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(){
+				var pass = document.getElementById("fapp_input_pass");
+				var repass = document.getElementById("fapp_input_repass");
+				if(pass.value == repass.value){
+					query_client_change(black_scrn);
+					document.body.removeChild(black_scrn);
+				}else{
+					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
+				}
+			});
+			document.getElementById("fapp_input_repass").addEventListener('keypress',function(){
+				var repass = document.getElementById("fapp_input_repass");
+				repass.style.backgroundColor = "rgba(255,255,255,0.2)";
+			});
+		}
+	});
+}
+
+function query_client_change(){
+	
 }
 
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
