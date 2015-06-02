@@ -18,6 +18,8 @@ var office_generic = chrome.extension.getURL("IMGs/edificio.png");
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
+const clientY = 55;//How much the panel must scroll per client
+var acumY = 0;//The actual position of highlighted element
 
 //Functions
 function build_menu(){
@@ -203,7 +205,8 @@ function add_listeners(){
 	document.getElementById("fapp_search_input_field").addEventListener('keydown',function(e){
 		switch(e.keyCode){
 			case 13: //Enter
-				var selected = get_search_results().selected;var n = get_search_results().n;var class_parts = get_search_results().class_parts;
+				var res = get_search_results();
+				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
 				if(class_parts[1] == "fapp_client_normal"){
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted"; 
 				}else{//If already highlighted
@@ -212,22 +215,34 @@ function add_listeners(){
 				set_selected_num();
 				break;
 			case 38: //Up arrow
-				var selected = get_search_results().selected;var n = get_search_results().n;var class_parts = get_search_results().class_parts;
+				var res = get_search_results();
+				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
+				var clients_panel = document.getElementById("fdc1");
 				if(sel_index > 0 && selected[sel_index].className.split(" ")[1] == "fapp_client_highlighted"){
 					selected[sel_index].className = class_parts[0] + " fapp_client_normal";
 					sel_index -= 1;
 					class_parts = selected[sel_index].className.split(" ");
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
+					acumY -= clientY;
 				}
+				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;
+				var times = Math.floor(acumY/ratio);
+				if(acumY <= ratio*times) animate_scroll_up(ratio*(times-1)+clientY);
 				break;
 			case 40: //Down arrow
-				var selected = get_search_results().selected;var n = get_search_results().n;var class_parts = get_search_results().class_parts;
+				var res = get_search_results();
+				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
+				var clients_panel = document.getElementById("fdc1");
 				if(sel_index < n - 1  && selected[sel_index].className.split(" ")[1] == "fapp_client_highlighted"){
 					selected[sel_index].className = class_parts[0] + " fapp_client_normal";
 					sel_index += 1;
 					class_parts = selected[sel_index].className.split(" ");
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
+					acumY += clientY;
 				}
+				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;
+				var times = Math.ceil(acumY/ratio);
+				if(acumY >= ratio*times) animate_scroll_down(ratio*times);
 				break;
 			default:
 				sel_index = 0;
@@ -235,6 +250,26 @@ function add_listeners(){
 	});
 }
 
+function animate_scroll_down(ratio){
+	var clients_panel = document.getElementById("fdc1");
+	setTimeout(function(){
+		var old_scroll = clients_panel.scrollTop;var change = true;
+		clients_panel.scrollTop += 5;
+		if(old_scroll == clients_panel.scrollTop) change = false;
+		if(clients_panel.scrollTop < ratio && change) animate_scroll_down(ratio);
+	}, 1);
+}
+
+function animate_scroll_up(ratio){
+	var clients_panel = document.getElementById("fdc1");
+	setTimeout(function(){
+		var old_scroll = clients_panel.scrollTop;var change = true;
+		clients_panel.scrollTop -= 5;
+		if(old_scroll == clients_panel.scrollTop) change = false;
+		if(clients_panel.scrollTop > ratio && change) animate_scroll_up(ratio);
+	}, 1);
+}
+					
 function check_page(){
 	if(window.location.href.indexOf(iqaccess_url) == 0){
 		//We reached the netiq access manager... :(
