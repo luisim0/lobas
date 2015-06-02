@@ -1,9 +1,9 @@
 //SAT URLs
-var iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
-var weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
-var valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
-var logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
-var valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+const iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
+const weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
+const valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+const logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
+const valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
 
 //Globals
 const hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
@@ -23,6 +23,7 @@ var prev_search = "";
 var sel_index = 0;
 const clientY = 55;//How much the panel must scroll per client
 var acumY = 0;//The actual position of highlighted element
+var prev_e;//To prevent double event firing
 
 //Functions
 function build_menu(){
@@ -40,23 +41,18 @@ function build_menu(){
 			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
 		});
 		
-		//Place/edit images		
-		var status_image = document.getElementById("fapp_status");
+		//Place/edit images
 		document.getElementById("fapp_logo").src = fapp_logo;
-		
-		//Change status loading
-		status_image.src = status_loading;
 		
 		//Insert Clients
 		refresh_clients();
-		
-		//Success!
-		status_image.src = status_ready;
 	};
 	get_side_bar.send();
 }
 
 function refresh_clients(){
+	var status_image = document.getElementById("fapp_status");
+	status_image.src = status_loading;
 	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
 	chrome.extension.sendMessage(jsoned,function(response){//Obtenemos clientes
 		if(response.answer == 'Error'){
@@ -83,7 +79,9 @@ function refresh_clients(){
 						client_data.appendChild(par_div);
 					}
 					add_listeners();
-					document.getElementById("fapp_status").src = status_ready;					
+					set_selected_num();
+					document.getElementById("fapp_search_input_field").value = "";
+					status_image.src = status_ready;					
 				}
 			});
 		}
@@ -103,8 +101,10 @@ function get_search_results(){
 }
 
 function set_selected_num(){
-	document.getElementById("fapp_client_count").innerHTML = document.getElementsByClassName("fapp_client_selected").length;
-	return true;
+	var items = document.getElementsByClassName("fapp_client_selected"); 
+	var n = items.length;
+	document.getElementById("fapp_client_count").innerHTML = n;
+	return {items:items, length:n};
 }
 
 function add_listeners(){
@@ -258,14 +258,23 @@ function add_listeners(){
 	});
 	
 	//Client Add edit delete
-	document.getElementById("fapp_client_add").addEventListener('click',function(){
-		throw_popup('add');
+	document.getElementById("fapp_client_add").addEventListener('click',function(e){
+		if(prev_e != e.timeStamp) throw_popup('add');
+		prev_e = e.timeStamp;
+		return false;
 	});
-	document.getElementById("fapp_client_edit").addEventListener('click',function(){
-		throw_popup('edit');//Falta el argumento con el ID del usuario////////////////////////////////////////////////////////////////////
+	document.getElementById("fapp_client_edit").addEventListener('click',function(e){
+		var clients = set_selected_num();
+		if(clients.length == 1){
+			throw_popup('edit',clients.items[0]);
+		}else{
+			alert("Seleccione un solo usuario por favor");
+		}
+		return false;
 	});
-	document.getElementById("fapp_client_bin").addEventListener('click',function(){
+	document.getElementById("fapp_client_bin").addEventListener('click',function(e){
 		alert("delete");
+		return false;
 	});
 }
 
@@ -334,7 +343,7 @@ function is_session_active(){
 	});
 }
 
-function throw_popup(addedit){
+function throw_popup(addedit, client){
 	var black_scrn = document.createElement("div");
 	black_scrn.className = "fapp_cover_page";
 	
@@ -345,29 +354,39 @@ function throw_popup(addedit){
 		}else{
 			black_scrn.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
 			document.body.appendChild(black_scrn);
+			
+			//Fill form if Edit mode
+			if(addedit == 'edit'){
+				document.getElementById("fapp_input_name").value = client.getElementsByClassName("fapp_client_name_holder")[0].innerHTML;
+				document.getElementById("fapp_input_rfc").value = client.getElementsByClassName("fapp_client_RFC")[0].innerHTML;
+			}
+			
 			//Add handlers
-			document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(){
+			document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(e){
 				document.body.removeChild(black_scrn);
 			});
-			document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(){
+			document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(e){
 				var pass = document.getElementById("fapp_input_pass");
 				var repass = document.getElementById("fapp_input_repass");
 				if(pass.value == repass.value){
-					query_client_change(black_scrn,addedit);
-					//If successfull will close popup automatically - see query_client_change() below
+					query_client_change(black_scrn, addedit, client);
 				}else{
 					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
 				}
 			});
-			document.getElementById("fapp_input_repass").addEventListener('keypress',function(){
+			document.getElementById("fapp_input_repass").addEventListener('keypress',function(e){
 				var repass = document.getElementById("fapp_input_repass");
 				repass.style.backgroundColor = "rgba(255,255,255,0.2)";
 			});
 		}
+		return false;
 	});
+	return false;
 }
 
-function query_client_change(dataNode, option, id){
+function query_client_change(dataNode, option, client){
+	var status_image = document.getElementById("fapp_status");
+	status_image.src = status_loading;
 	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
 	jsoned.data[0] = {name:"Name", value:document.getElementById("fapp_input_name").value};
 	jsoned.data[1] = {name:"Username", value:document.getElementById("fapp_input_rfc").value};
@@ -378,33 +397,39 @@ function query_client_change(dataNode, option, id){
 			break;
 		case 'edit':
 			jsoned.url = edit_client_php;
-			//Add ID as jsoned.data[3] = id;
+			jsoned.data[3] = {name:"ID", value:client.id};
 			break;
 		default:
 			return false;
 	}
 	chrome.extension.sendMessage(jsoned,function(response){
 		if(response.answer == 'Error'){
+			status_image.src = status_wrong;
 			alert("Ocurrió un problema al enviar su solicitud, por favor intente más tarde");
 		}else{
 			switch(response.answer){
 				case 'Scs_1'://Todo chingón
 					refresh_clients();
-					document.getElementById("fapp_search_input_field").value = "";
 					document.body.removeChild(dataNode);
 					break;
 				case 'Scs_0'://No se pudo
+					status_image.src = status_wrong;
 					alert("No es posible realizar la acción en este momento. Por favor intente más tarde");
 					document.body.removeChild(dataNode);
 					break;
 				case 'Err_7'://No se agrega porque ya hay!
+					status_image.src = status_ready;
 					alert("¡Ya tienes registrado este RFC!");
 					document.body.removeChild(dataNode);
 					break;
 				default:
+					status_image.src = status_wrong;
+					document.body.removeChild(dataNode);
 			}
 		}
+		return false;
 	});
+	return false;
 }
 
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
