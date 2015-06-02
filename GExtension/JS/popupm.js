@@ -1,7 +1,7 @@
 //SAT URLs
 var iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
 var weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";
-var valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon&sid=0&option=credential&sid=0";
+var valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
 var logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
 var valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
 
