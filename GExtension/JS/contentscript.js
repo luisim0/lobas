@@ -224,10 +224,9 @@ function add_listeners(){
 					class_parts = selected[sel_index].className.split(" ");
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
 					acumY -= clientY;
-				}
-				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;
-				var times = Math.floor(acumY/ratio);
-				if(acumY <= ratio*times) animate_scroll_up(ratio*(times-1)+clientY);
+				}	
+				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;//Page size
+				if(acumY < clients_panel.scrollTop) animate_scroll_up(acumY - ratio + clientY);
 				break;
 			case 40: //Down arrow
 				var res = get_search_results();
@@ -240,9 +239,8 @@ function add_listeners(){
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
 					acumY += clientY;
 				}
-				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;
-				var times = Math.ceil(acumY/ratio);
-				if(acumY >= ratio*times) animate_scroll_down(ratio*times);
+				var ratio = Math.floor(clients_panel.offsetHeight/clientY)*clientY;//Page size
+				if(acumY >= clients_panel.scrollTop + ratio) animate_scroll_down(acumY);
 				break;
 			default:
 				sel_index = 0;
