@@ -16,6 +16,8 @@ const status_loading = chrome.extension.getURL("IMGs/loading.gif");
 const status_wrong = chrome.extension.getURL("IMGs/wrong.png");
 const fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
 const office_generic = chrome.extension.getURL("IMGs/edificio.png");
+const add_client_php = "http://facturapp.eu.pn/PHP/addClient.php";
+const edit_client_php = "http://facturapp.eu.pn/PHP/editClient.php";
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
@@ -40,45 +42,52 @@ function build_menu(){
 		
 		//Place/edit images		
 		var status_image = document.getElementById("fapp_status");
-		status_image.src = status_ready;
 		document.getElementById("fapp_logo").src = fapp_logo;
 		
 		//Change status loading
 		status_image.src = status_loading;
 		
 		//Insert Clients
-		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
-		chrome.extension.sendMessage(jsoned,function(response){//Obtenemos clientes
-			if(response.answer == 'Error'){
-				status_image.src = status_wrong;
-				alert("No se ha procesado correctamente la respuesta del servidor, por favor refresce la página para intentarlo de nuevo.");
-			}else{
-				json_arr = JSON.parse(response.answer);
-				document.getElementById("fapp_num_clients").innerHTML = json_arr.length;
-				jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = client_box;
-				chrome.extension.sendMessage(jsoned,function(response){//Obtenemos template para el contenedor
-					if(response.answer == 'Error'){
-						alert("No se ha procesado correctamente la respuesta de la extensión, por favor refresce la página para intentarlo de nuevo.");
-						status_image.src = status_wrong;
-					}else{
-						var n = json_arr.length;
-						var client_data = document.getElementById("fdc1");
-						for(i = 0;i < n;i++){
-							var par_div = document.createElement("div");
-							par_div.className = "fapp_client_box fapp_client_normal"; par_div.id = json_arr[i].id;
-							par_div.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
-							par_div.getElementsByClassName("fapp_client_name_holder")[0].innerHTML = json_arr[i].name;
-							par_div.getElementsByClassName("fapp_client_RFC")[0].innerHTML = json_arr[i].rfc;
-							client_data.appendChild(par_div);
-						}
-						add_listeners();
-						status_image.src = status_ready;					
-					}
-				});
-			}
-		});
+		refresh_clients();
+		
+		//Success!
+		status_image.src = status_ready;
 	};
 	get_side_bar.send();
+}
+
+function refresh_clients(){
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
+	chrome.extension.sendMessage(jsoned,function(response){//Obtenemos clientes
+		if(response.answer == 'Error'){
+			status_image.src = status_wrong;
+			alert("No se ha procesado correctamente la respuesta del servidor, por favor refresce la página para intentarlo de nuevo.");
+		}else{
+			json_arr = JSON.parse(response.answer);
+			document.getElementById("fapp_num_clients").innerHTML = json_arr.length;
+			jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = client_box;
+			chrome.extension.sendMessage(jsoned,function(response){//Obtenemos template para el contenedor
+				if(response.answer == 'Error'){
+					alert("No se ha procesado correctamente la respuesta de la extensión, por favor refresce la página para intentarlo de nuevo.");
+					status_image.src = status_wrong;
+				}else{
+					var n = json_arr.length;
+					var client_data = document.getElementById("fdc1");
+					client_data.innerHTML = "";
+					for(i = 0;i < n;i++){
+						var par_div = document.createElement("div");
+						par_div.className = "fapp_client_box fapp_client_normal"; par_div.id = json_arr[i].id;
+						par_div.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
+						par_div.getElementsByClassName("fapp_client_name_holder")[0].innerHTML = json_arr[i].name;
+						par_div.getElementsByClassName("fapp_client_RFC")[0].innerHTML = json_arr[i].rfc;
+						client_data.appendChild(par_div);
+					}
+					add_listeners();
+					document.getElementById("fapp_status").src = status_ready;					
+				}
+			});
+		}
+	});
 }
 
 function get_search_results(){
@@ -253,7 +262,7 @@ function add_listeners(){
 		throw_popup('add');
 	});
 	document.getElementById("fapp_client_edit").addEventListener('click',function(){
-		throw_popup('edit');
+		throw_popup('edit');//Falta el argumento con el ID del usuario////////////////////////////////////////////////////////////////////
 	});
 	document.getElementById("fapp_client_bin").addEventListener('click',function(){
 		alert("delete");
@@ -344,8 +353,8 @@ function throw_popup(addedit){
 				var pass = document.getElementById("fapp_input_pass");
 				var repass = document.getElementById("fapp_input_repass");
 				if(pass.value == repass.value){
-					query_client_change(black_scrn);
-					document.body.removeChild(black_scrn);
+					query_client_change(black_scrn,addedit);
+					//If successfull will close popup automatically - see query_client_change() below
 				}else{
 					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
 				}
@@ -358,8 +367,44 @@ function throw_popup(addedit){
 	});
 }
 
-function query_client_change(){
-	
+function query_client_change(dataNode, option, id){
+	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
+	jsoned.data[0] = {name:"Name", value:document.getElementById("fapp_input_name").value};
+	jsoned.data[1] = {name:"Username", value:document.getElementById("fapp_input_rfc").value};
+	jsoned.data[2] = {name:"Password", value:document.getElementById("fapp_input_pass").value};
+	switch(option){
+		case 'add':
+			jsoned.url = add_client_php; 
+			break;
+		case 'edit':
+			jsoned.url = edit_client_php;
+			//Add ID as jsoned.data[3] = id;
+			break;
+		default:
+			return false;
+	}
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("Ocurrió un problema al enviar su solicitud, por favor intente más tarde");
+		}else{
+			switch(response.answer){
+				case 'Scs_1'://Todo chingón
+					refresh_clients();
+					document.getElementById("fapp_search_input_field").value = "";
+					document.body.removeChild(dataNode);
+					break;
+				case 'Scs_0'://No se pudo
+					alert("No es posible realizar la acción en este momento. Por favor intente más tarde");
+					document.body.removeChild(dataNode);
+					break;
+				case 'Err_7'://No se agrega porque ya hay!
+					alert("¡Ya tienes registrado este RFC!");
+					document.body.removeChild(dataNode);
+					break;
+				default:
+			}
+		}
+	});
 }
 
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
