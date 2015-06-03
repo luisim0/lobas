@@ -326,12 +326,155 @@
 	padding: 5px 2px;
 }
 
+.fapp_input_main{
+	border: #eaeaea thick solid;
+	border-radius: 35px;
+	background-color: rgba(40,115,181,0.8);
+	font-family: 'Open Sans', sans-serif;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	opacity: 0;
+	transition: opacity 0.3s ease-out;
+	margin-top: calc(-215px/2);
+	margin-left: calc(-404px/2);
+}
+
+.fapp_input_main_visible{
+	border: #eaeaea thick solid;
+	border-radius: 35px;
+	background-color: rgba(40,115,181,0.8);
+	font-family: 'Open Sans', sans-serif;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	opacity: 1;
+	transition: opacity 0.3s ease-in;
+	margin-top: calc(-215px/2);
+	margin-left: calc(-404px/2);
+}
+
+.fapp_input_title{
+	color: rgb(234, 234, 234);
+	font-size: 14pt;
+	text-align: center;
+}
+
+.fapp_input_title p{
+	margin: 0px;
+	padding: 10px;
+	font-size: 20pt;
+	color: #EAEAEA;
+	border-bottom: thin #eaeaea dashed;
+}
+
+.fapp_input_inputs{
+	padding: 5px 20px;
+	color: white;
+}
+
+.fapp_input_input{
+	width: 100%;
+	height: 25px;
+}
+
+.fapp_input_input p{
+	padding: 0px;
+	margin: 0px 0px;
+	width: 200px;
+	float: left;
+	font-size: 11pt;
+	text-align: right;
+}
+
+.fapp_input_input input{
+	border: solid #EAEAEA 2px;
+	background-color: rgba(255,255,255,0.2);
+	border-radius: 15px;
+	width: 125px;
+	margin-left: 5px;
+	color: #EAEAEA;
+	font-weight: bold;
+}
+
+#fapp_input_name, #fapp_input_rfc, #fapp_input_pass, #fapp_input_repass{
+	padding: 0px 10px;
+}
+
+.fapp_input_buttons{
+	padding: 0px 30px;
+}
+
+.fapp_input_submit, .fapp_input_cancel{
+	float: right;
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/rectangle.png");
+	background-repeat: no-repeat;
+	width: 50px;
+	height: 33px;
+	margin: 0px 10px;
+	padding: 0px;
+	margin-bottom: 5px;
+	cursor: pointer;
+}
+
+.fapp_input_check{
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/check.png");
+	background-repeat: no-repeat;
+	width: 50px;
+	height: 33px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.fapp_input_check:hover{
+	animation-name: vibrate;
+	animation-duration: 0.1s;
+	animation-iteration-count: 2;
+}
+
+.fapp_input_cross{
+	background-image: url("chrome-extension://__MSG_@@extension_id__/IMGs/cross.png");
+	background-repeat: no-repeat;
+	width: 50px;
+	height: 33px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.fapp_input_cross:hover{
+	animation-name: vibrate;
+	animation-duration: 0.1s;
+	animation-iteration-count: 2;
+}
+
+.fapp_cover_page{
+	position:absolute;
+	height: 0%;
+	width: 100%;
+	background-color: rgba(2,35,38,0.7);
+	z-index: 9999;
+	top: 0%;
+	transition: height 0.3s ease-out;
+	overflow: hidden;
+}
+
+.fapp_cover_page_visible{
+	position:absolute;
+	height: 100%;
+	width: 100%;
+	background-color: rgba(2,35,38,0.7);
+	z-index: 9999;
+	top: 0%;
+	transition: height 0.3s ease-out;
+	overflow: hidden;
+}
 
 /*IDs*/
 #fapp_main_panel{
 	height: 97vh;
 	border: none;
 	background-color: rgba(40,115,181,0.8);
+	font-family: 'Open Sans', sans-serif;
 	position: relative;
 	float: right;
 	display: table;
