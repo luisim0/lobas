@@ -130,9 +130,8 @@ function refresh_clients(listeners){
 }
 
 function add_client_listeners(){
-	var cat_links = document.getElementsByClassName("fapp_category_container");
-	//Client selection - recycle above variables - Clients must be loaded at the begining!!!!
-	cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
+	//Client selection - Clients must be loaded at the begining!!!!
+	var cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 	for(i = 0;i < n;i++){
 		cat_links[i].addEventListener('click',function(){
 			var class_parts = this.parentNode.className.split(" ");
@@ -189,7 +188,8 @@ function add_listeners(){
 		});
 	}
 	
-	//Selection tools - uses the same cat_links variable above!! Select all and none
+	//Selection tools - Select all and none
+	var cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 	document.getElementById("fapp_client_all").addEventListener('click',function(){
 		for(i = 0;i < n;i++){
 			var class_parts = cat_links[i].parentNode.className.split(" ");
