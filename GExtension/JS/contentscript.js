@@ -18,6 +18,7 @@ const fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
 const office_generic = chrome.extension.getURL("IMGs/edificio.png");
 const add_client_php = "http://facturapp.eu.pn/PHP/addClient.php";
 const edit_client_php = "http://facturapp.eu.pn/PHP/editClient.php";
+const del_clients_php = "http://facturapp.eu.pn/PHP/deleteClient.php";
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
@@ -121,6 +122,7 @@ function refresh_clients(listeners){
 					add_client_listeners();
 					set_selected_num();
 					document.getElementById("fapp_search_input_field").value = "";
+					sel_index = 0; acumY = 0;
 					status_image.src = status_ready;					
 				}
 			});
@@ -189,8 +191,8 @@ function add_listeners(){
 	}
 	
 	//Selection tools - Select all and none
-	var cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 	document.getElementById("fapp_client_all").addEventListener('click',function(){
+		var cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 		for(i = 0;i < n;i++){
 			var class_parts = cat_links[i].parentNode.className.split(" ");
 			(class_parts[1] != "fapp_client_hidden") ? cat_links[i].parentNode.className = "fapp_client_selected " + class_parts[1] : null;
@@ -199,6 +201,7 @@ function add_listeners(){
 	});
 	
 	document.getElementById("fapp_client_none").addEventListener('click',function(){
+		var cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 		for(i = 0;i < n;i++){
 			var class_parts = cat_links[i].parentNode.className.split(" ");
 			(class_parts[1] != "fapp_client_hidden") ? cat_links[i].parentNode.className = "fapp_client_box " + class_parts[1] : null;
@@ -243,7 +246,7 @@ function add_listeners(){
 				var res = get_search_results();
 				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
 				if(class_parts[1] == "fapp_client_normal"){
-					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted"; 
+					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
 				}else{//If already highlighted
 					(class_parts[0] == "fapp_client_box") ? selected[sel_index].className = "fapp_client_selected " + class_parts[1] : selected[sel_index].className = "fapp_client_box " + class_parts[1];
 				}
@@ -278,7 +281,7 @@ function add_listeners(){
 				if(acumY >= clients_panel.scrollTop + ratio) animate_scroll_down(acumY);
 				break;
 			default:
-				sel_index = 0;
+				sel_index = 0; acumY = 0;
 		}
 	});
 	
@@ -296,7 +299,20 @@ function add_listeners(){
 		return false;
 	});
 	document.getElementById("fapp_client_bin").addEventListener('click',function(e){
-		alert("delete");
+		var clients = set_selected_num();
+		if(clients.length > 0){
+			if(confirm("¿En verdad quiere eliminar a los clientes seleccionados?")){
+				var IDs = "["; var RFCs = "[";
+				for(i = 0;i < clients.length;i++){
+					IDs += clients.items[i].id + ",";
+					RFCs += '"' + clients.items[i].getElementsByClassName("fapp_client_RFC")[0].innerHTML + '",';
+				}
+				IDs = IDs.replaceAt(IDs.length - 1, "]"); RFCs = RFCs.replaceAt(RFCs.length - 1, "]");
+				send_delete(IDs, RFCs);
+			}
+		}else{
+			alert("Por favor seleccione al menos un cliente");
+		}
 		return false;
 	});
 	
@@ -319,6 +335,34 @@ function add_listeners(){
 			repass.style.backgroundColor = "rgba(255,166,155,0.5)";
 		}
 	});
+}
+
+function send_delete(IDs, RFCs){
+	var status_image = document.getElementById("fapp_status");
+	status_image.src = status_loading;
+	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
+	jsoned.url = del_clients_php;
+	jsoned.data[0] = {name:"ID", value:IDs};
+	jsoned.data[1] = {name:"RFC", value:RFCs};
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("No se ha podido procesar la respuesta del servidor. Inténtelo más tarde");
+			return false;
+		}else{
+			if('Scs_1'){
+				refresh_clients(false);
+				return false;
+			}else{
+				alert("Los clientes no se pudieron eliminar. Por favor inténtelo nuevamente");
+				return false;
+			}
+		}
+	});
+	return false;
+}
+
+String.prototype.replaceAt = function(index, character){
+	return this.substr(0,index) + character + this.substr(index+character.length);
 }
 
 function set_selected_num(){
@@ -410,7 +454,7 @@ function query_client_change(option, client){
 		}else{
 			switch(response.answer){
 				case 'Scs_1'://Todo chingón
-					refresh_clients(false);///////////////////////////////////////////////////////////////////////////////////////Aquí está todo el pedo!!!!
+					refresh_clients(false);
 					break;
 				case 'Scs_0'://No se pudo
 					status_image.src = status_wrong;
