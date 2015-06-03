@@ -327,9 +327,6 @@
 }
 
 .fapp_input_main{
-	/*width: 400px;
-	height: 200px;*/
-	overflow: hidden;
 	border: #eaeaea thick solid;
 	border-radius: 35px;
 	background-color: rgba(40,115,181,0.8);
@@ -337,6 +334,22 @@
 	position: absolute;
 	left: 50%;
 	top: 50%;
+	opacity: 0;
+	transition: opacity 0.3s ease-out;
+	margin-top: calc(-215px/2);
+	margin-left: calc(-404px/2);
+}
+
+.fapp_input_main_visible{
+	border: #eaeaea thick solid;
+	border-radius: 35px;
+	background-color: rgba(40,115,181,0.8);
+	font-family: 'Open Sans', sans-serif;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	opacity: 1;
+	transition: opacity 0.3s ease-in;
 	margin-top: calc(-215px/2);
 	margin-left: calc(-404px/2);
 }
@@ -436,10 +449,24 @@
 
 .fapp_cover_page{
 	position:absolute;
+	height: 0%;
+	width: 100%;
+	background-color: rgba(2,35,38,0.7);
+	z-index: 9999;
+	top: 0%;
+	transition: height 0.3s ease-out;
+	overflow: hidden;
+}
+
+.fapp_cover_page_visible{
+	position:absolute;
 	height: 100%;
 	width: 100%;
 	background-color: rgba(2,35,38,0.7);
 	z-index: 9999;
+	top: 0%;
+	transition: height 0.3s ease-out;
+	overflow: hidden;
 }
 
 /*IDs*/

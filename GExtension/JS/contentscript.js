@@ -28,17 +28,54 @@ var prev_e;//To prevent double event firing
 var sync = {get_clients:false, get_template:false};
 
 //Functions
+function check_page(){
+	if(window.location.href.indexOf(iqaccess_url) == 0){
+		//We reached the netiq access manager... :(
+		window.location.replace(logged_sat_url);
+		return false;
+	}else if(window.location.href.indexOf(weird_sat_login) == 0){
+		//Ended session
+		window.location.replace(valid_sat_login);
+		return false;
+	}else{
+		//Normal entrance
+		is_session_active();
+		return true;
+	}
+}
+
+function is_session_active(){
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
+			return false;
+		}else{
+			var yesno = response.answer.split("_")[1];
+			if(yesno == "0"){//There's no session
+				//instruct to open session
+				if(window.location.href.indexOf(valid_sat_token) == 0){
+					jsoned = JSON.parse('{"action":"prompt_message"}');
+					chrome.extension.sendMessage(jsoned);
+				}
+				return false;
+			}else{//There's session
+				build_menu();
+				return true;
+			}
+		}
+	});
+}
+
 function build_menu(){
 	var get_side_bar = new XMLHttpRequest();
 	get_side_bar.open("GET", sidebar_URL, true);
 	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 	get_side_bar.onload = function(argument){
-		var menu = document.createElement('div');
-		menu.id = 'fapp_main_panel';
-		menu.innerHTML = get_side_bar.responseText.replace(/[\r\n\t]/g, "");
-		
 		//Insert structure
-		document.body.appendChild(menu);
+		document.body.innerHTML += get_side_bar.responseText.replace(/[\r\n\t]/g, "");
+		
+		//Save RFC options
 		chrome.storage.sync.get("RFC",function(data){
 			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
 		});
@@ -47,12 +84,12 @@ function build_menu(){
 		document.getElementById("fapp_logo").src = fapp_logo;
 		
 		//Insert Clients
-		while(!refresh_clients()){alert("Still not refreshed");};
+		refresh_clients(true);
 	};
 	get_side_bar.send();
 }
 
-function refresh_clients(){
+function refresh_clients(listeners){
 	var status_image = document.getElementById("fapp_status");
 	status_image.src = status_loading;
 	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
@@ -80,38 +117,29 @@ function refresh_clients(){
 						par_div.getElementsByClassName("fapp_client_RFC")[0].innerHTML = json_arr[i].rfc;
 						client_data.appendChild(par_div);
 					}
-					add_listeners();
+					if(listeners) add_listeners();
+					add_client_listeners();
 					set_selected_num();
 					document.getElementById("fapp_search_input_field").value = "";
 					status_image.src = status_ready;					
 				}
-				sync.get_template = true;
 			});
-			while(!sync.get_template){alert("no template");};
 		}
-		sync.get_clients = true;
 	});
-	while(!sync.get_clients){alert("no clients");};
 	return true;
 }
 
-function get_search_results(){
-	var clients = document.getElementById("fdc1").children;var n = clients.length;
-	var selected = [];
+function add_client_listeners(){
+	var cat_links = document.getElementsByClassName("fapp_category_container");
+	//Client selection - recycle above variables - Clients must be loaded at the begining!!!!
+	cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
 	for(i = 0;i < n;i++){
-		var class_parts = clients[i].className.split(" ");
-		if(class_parts[1] != "fapp_client_hidden"){
-			selected.push(clients[i]);
-		}
+		cat_links[i].addEventListener('click',function(){
+			var class_parts = this.parentNode.className.split(" ");
+			(class_parts[0] == "fapp_client_box") ? this.parentNode.className = "fapp_client_selected " + class_parts[1] : this.parentNode.className = "fapp_client_box " + class_parts[1];
+			set_selected_num();
+		});
 	}
-	return {selected:selected, n:selected.length, class_parts:selected[sel_index].className.split(" ")};
-}
-
-function set_selected_num(){
-	var items = document.getElementsByClassName("fapp_client_selected"); 
-	var n = items.length;
-	document.getElementById("fapp_client_count").innerHTML = n;
-	return {items:items, length:n};
 }
 
 function add_listeners(){
@@ -158,16 +186,6 @@ function add_listeners(){
 					cat_links[j].firstChild.style.cursor = "default";
 				}
 			}
-		});
-	}
-	
-	//Client selection - recycle above variables - Clients must be loaded at the begining!!!!
-	cat_links = document.getElementsByClassName("fapp_client_icon"); n = cat_links.length;
-	for(i = 0;i < n;i++){
-		cat_links[i].addEventListener('click',function(){
-			var class_parts = this.parentNode.className.split(" ");
-			(class_parts[0] == "fapp_client_box") ? this.parentNode.className = "fapp_client_selected " + class_parts[1] : this.parentNode.className = "fapp_client_box " + class_parts[1];
-			set_selected_num();
 		});
 	}
 	
@@ -266,9 +284,7 @@ function add_listeners(){
 	
 	//Client Add edit delete
 	document.getElementById("fapp_client_add").addEventListener('click',function(e){
-		if(prev_e != e.timeStamp){throw_popup('add')}
-		prev_e = e.timeStamp;
-		return false;
+		throw_popup('add');
 	});
 	document.getElementById("fapp_client_edit").addEventListener('click',function(e){
 		var clients = set_selected_num();
@@ -283,6 +299,45 @@ function add_listeners(){
 		alert("delete");
 		return false;
 	});
+	
+	//Add client input handlers
+	document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(){
+		hide_popup();
+	});
+	document.getElementById("fapp_input_repass").addEventListener('keypress',function(){
+		var repass = document.getElementById("fapp_input_repass");
+		repass.style.backgroundColor = "rgba(255,255,255,0.2)";
+	});
+	document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(){
+		var pass = document.getElementById("fapp_input_pass");
+		var repass = document.getElementById("fapp_input_repass");
+		if(pass.value == repass.value){
+			var client = set_selected_num().items[0];
+			var addedit = document.getElementsByClassName("fapp_input_main_visible")[0].id;
+			query_client_change(addedit, client);
+		}else{
+			repass.style.backgroundColor = "rgba(255,166,155,0.5)";
+		}
+	});
+}
+
+function set_selected_num(){
+	var items = document.getElementsByClassName("fapp_client_selected"); 
+	var n = items.length;
+	document.getElementById("fapp_client_count").innerHTML = n;
+	return {items:items, length:n};
+}
+
+function get_search_results(){
+	var clients = document.getElementById("fdc1").children;var n = clients.length;
+	var selected = [];
+	for(i = 0;i < n;i++){
+		var class_parts = clients[i].className.split(" ");
+		if(class_parts[1] != "fapp_client_hidden"){
+			selected.push(clients[i]);
+		}
+	}
+	return {selected:selected, n:selected.length, class_parts:selected[sel_index].className.split(" ")};
 }
 
 function animate_scroll_down(ratio){
@@ -304,95 +359,33 @@ function animate_scroll_up(ratio){
 		if(clients_panel.scrollTop > ratio && change) animate_scroll_up(ratio);
 	}, 1);
 }
-					
-function check_page(){
-	if(window.location.href.indexOf(iqaccess_url) == 0){
-		//We reached the netiq access manager... :(
-		window.location.replace(logged_sat_url);
-		return false;
-	}else if(window.location.href.indexOf(weird_sat_login) == 0){
-		//Ended session
-		window.location.replace(valid_sat_login);
-		return false;
-	}/*else{
-		var ind = document.getElementsByClassName("contrasena")[0].getElementsByTagName("a")[0];
-		if(ind.innerHTML == "Fiel"){//Good page
-			return true;
-		}else{//Bad page
-			return false;
-		}
-	}*/
-	is_session_active();
-	return true;
-}
 
-function is_session_active(){
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
-	chrome.extension.sendMessage(jsoned,function(response){
-		if(response.answer == 'Error'){
-			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
-			//window.close();
-			return false;
-		}else{
-			var yesno = response.answer.split("_")[1];
-			if(yesno == "0"){//There's no session
-				//instruct to open session
-				if(window.location.href.indexOf(valid_sat_token) == 0){
-					jsoned = JSON.parse('{"action":"prompt_message"}');
-					chrome.extension.sendMessage(jsoned);
-				}
-				return false;
-			}else{//There's session
-				build_menu();
-				return true;
-			}
-		}
-	});
-}
-
-function throw_popup(addedit, client){
-	var black_scrn = document.createElement("div");
-	black_scrn.className = "fapp_cover_page";
+function throw_popup(addedit, client){	
+	//Fill form if Edit mode
+	if(addedit == 'edit'){
+		document.getElementById("fapp_input_name").value = client.getElementsByClassName("fapp_client_name_holder")[0].innerHTML;
+		document.getElementById("fapp_input_rfc").value = client.getElementsByClassName("fapp_client_RFC")[0].innerHTML;
+	}else{
+		document.getElementById("fapp_input_name").value = "";
+		document.getElementById("fapp_input_rfc").value = "";
+	}
+	document.getElementById("fapp_input_pass").value = "";
+	document.getElementById("fapp_input_repass").value = "";
 	
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = popup_box;
-	chrome.extension.sendMessage(jsoned,function(response){
-		if(response.answer == 'Error'){
-			alert("No fue posible procesar la información, por favor intente más tarde");
-		}else{
-			black_scrn.innerHTML = response.answer.replace(/[\r\n\t]/g, "");
-			document.body.appendChild(black_scrn);
-			
-			//Fill form if Edit mode
-			if(addedit == 'edit'){
-				document.getElementById("fapp_input_name").value = client.getElementsByClassName("fapp_client_name_holder")[0].innerHTML;
-				document.getElementById("fapp_input_rfc").value = client.getElementsByClassName("fapp_client_RFC")[0].innerHTML;
-			}
-			
-			//Add handlers
-			document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(e){
-				document.body.removeChild(black_scrn);
-			});
-			document.getElementById("fapp_input_repass").addEventListener('keypress',function(e){
-				var repass = document.getElementById("fapp_input_repass");
-				repass.style.backgroundColor = "rgba(255,255,255,0.2)";
-			});
-			document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(e){
-				var pass = document.getElementById("fapp_input_pass");
-				var repass = document.getElementById("fapp_input_repass");
-				if(pass.value == repass.value){
-					query_client_change(black_scrn, addedit, client);
-					//wait
-					document.body.removeChild(dataNode);
-				}else{
-					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
-				}
-			});
-		}
-	});
-	return false;
+	//Show it
+	document.getElementsByClassName("fapp_cover_page")[0].className = "fapp_cover_page_visible";
+	document.getElementsByClassName("fapp_input_main")[0].className = "fapp_input_main_visible";
+	
+	//Identify it
+	document.getElementsByClassName("fapp_input_main_visible")[0].id = addedit;
 }
 
-function query_client_change(dataNode, option, client){
+function hide_popup(){
+	document.getElementsByClassName("fapp_cover_page_visible")[0].className = "fapp_cover_page";
+	document.getElementsByClassName("fapp_input_main_visible")[0].className = "fapp_input_main";
+}
+
+function query_client_change(option, client){
 	var status_image = document.getElementById("fapp_status");
 	status_image.src = status_loading;
 	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
@@ -417,7 +410,7 @@ function query_client_change(dataNode, option, client){
 		}else{
 			switch(response.answer){
 				case 'Scs_1'://Todo chingón
-					while(!refresh_clients()){alert("Still not refreshed");};
+					refresh_clients(false);///////////////////////////////////////////////////////////////////////////////////////Aquí está todo el pedo!!!!
 					break;
 				case 'Scs_0'://No se pudo
 					status_image.src = status_wrong;
@@ -430,6 +423,7 @@ function query_client_change(dataNode, option, client){
 				default:
 					status_image.src = status_wrong;
 			}
+			hide_popup();
 		}
 	});
 	return false;

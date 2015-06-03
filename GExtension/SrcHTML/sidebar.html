@@ -1,77 +1,108 @@
-<div id='fapp_frame_manipulate'>
-	<div id='fapp_hide_holder'>
+<div id="fapp_main_panel">
+	<div id='fapp_frame_manipulate'>
+		<div id='fapp_hide_holder'>
+		</div>
+		<div id='fapp_status_holder'>
+			<img src='' id='fapp_status' height='30' width='30'>
+		</div>
+		<div id='fapp_logo_holder'>
+			<img src='' id='fapp_logo'>
+		</div>
 	</div>
-	<div id='fapp_status_holder'>
-		<img src='' id='fapp_status' height='30' width='30'>
-	</div>
-	<div id='fapp_logo_holder'>
-		<img src='' id='fapp_logo'>
-	</div>
-</div>
-<div id='fapp_frame_contents' class='fapp_frame_contents'>
-	<div id='fapp_cat_0' class='fapp_category_container'>
-		<p>Perfil</p>
-	</div>
-	<div class='fapp_data_container' id="fdc0">
-		<div id='fapp_profile_basics'>
-			<div class='fapp_office_icon'>
-			</div>
-			<div class='fapp_office_data'>
-				<div class='fapp_office_name'>
-					COMPANY WITH A LONG NAME S.A. de C.V.
+	<div id='fapp_frame_contents' class='fapp_frame_contents'>
+		<div id='fapp_cat_0' class='fapp_category_container'>
+			<p>Perfil</p>
+		</div>
+		<div class='fapp_data_container' id="fdc0">
+			<div id='fapp_profile_basics'>
+				<div class='fapp_office_icon'>
 				</div>
-				<div class="fapp_office_table">
-    				<div class='fapp_office_RFC'>
-    					RFC123456T78
-    				</div>
-    				<div class='fapp_office_offices'>
-    					<a id='fapp_num_clients'>1</a> Empresa(s)
-    				</div>
+				<div class='fapp_office_data'>
+					<div class='fapp_office_name'>COMPANY WITH A LONG NAME S.A. de C.V.</div>
+					<div class="fapp_office_table">
+						<div class='fapp_office_RFC'>RFC123456T78</div>
+						<div class='fapp_office_offices'>
+							<a id='fapp_num_clients'>1</a> Empresa(s)
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<div id='fapp_cat_1' class='fapp_category_container'>
-		<p>Clientes</p>
-	</div>	
-	<div id="fapp_menu_options" class="fapp_menu_hidden">
-		<div class="fapp_search_bar">
-			<div class="fapp_search_input">
-				<input type="text" id="fapp_search_input_field"/>
+		<div id='fapp_cat_1' class='fapp_category_container'>
+			<p>Clientes</p>
+		</div>
+		<div id="fapp_menu_options" class="fapp_menu_hidden">
+			<div class="fapp_search_bar">
+				<div class="fapp_search_input">
+					<input type="text" id="fapp_search_input_field"/>
+				</div>
+				<div class="fapp_search_button">
+					<p id="fapp_client_count" title="Clientes seleccionados">0</p>
+				</div>
 			</div>
-			<div class="fapp_search_button">
-				<p id="fapp_client_count" title="Clientes seleccionados">0</p>
+			<div class="fapp_menu_table">
+				<div class="fapp_menu_top">
+					<div class="fapp_menu_opholder">
+						<div id="fapp_client_add"></div>
+					</div>
+					<div class="fapp_menu_opholder">
+						<div id="fapp_client_edit"></div>
+					</div>
+					<div class="fapp_menu_opholder">
+						<div id="fapp_client_bin">
+							<div id="fapp_client_lid"></div>
+						</div>
+					</div>
+				</div>
+				<div class="fapp_menu_selectors">
+					<div class="fapp_menu_opholder">
+						<div id="fapp_client_all"></div>
+					</div>
+					<div class="fapp_menu_opholder">
+						<div id="fapp_client_none"></div>
+					</div>
+				</div>
 			</div>
-	    </div>
-	    <div class="fapp_menu_table">
-    		<div class="fapp_menu_top">
-    	        <div class="fapp_menu_opholder">
-    	            <div id="fapp_client_add"></div>
-    	        </div>
-    	        <div class="fapp_menu_opholder">
-    	            <div id="fapp_client_edit"></div>
-    	        </div>
-    	        <div class="fapp_menu_opholder">
-    	            <div id="fapp_client_bin">
-    	            	<div id="fapp_client_lid"></div>
-    	            </div>
-    	        </div>
-    	    </div>
-    	    <div class="fapp_menu_selectors">
-                <div class="fapp_menu_opholder">
-                    <div id="fapp_client_all"></div>
-                </div>
-                <div class="fapp_menu_opholder">
-                    <div id="fapp_client_none"></div>
-                </div>
-            </div>
-	    </div>
-    </div>   
-	<div class='fapp_data_container' id="fdc1"></div>
-	<div id='fapp_cat_2' class='fapp_category_container'>
-		<p>Descargar</p>
+		</div>
+		<div class='fapp_data_container' id="fdc1"></div>
+		<div id='fapp_cat_2' class='fapp_category_container'>
+			<p>Descargar</p>
+		</div>
+		<div class='fapp_data_container_populated' id="fdc2">
+			<a id='test'>Place RFC</a>
+		</div>
 	</div>
-	<div class='fapp_data_container_populated' id="fdc2">
-		<a id='test'>Place RFC</a>
+</div>
+<div class="fapp_cover_page">
+	<div class="fapp_input_main">
+		<div class="fapp_input_title">
+			<p>Captura de clientes</p>
+		</div>
+		<div class="fapp_input_inputs">
+			<div class="fapp_input_input">
+				<p>Nombre del cliente: </p>
+				<input type="text" id="fapp_input_name" name="Name"/>
+			</div>
+			<div class="fapp_input_input">
+				<p>RFC del cliente: </p>
+				<input type="text" id="fapp_input_rfc" name="Username"/>
+			</div>
+			<div class="fapp_input_input">
+				<p>Password SAT del cliente: </p>
+				<input type="password" id="fapp_input_pass" name="Password"/>
+			</div>
+			<div class="fapp_input_input">
+				<p>Reescriba el password SAT: </p>
+				<input type="password" id="fapp_input_repass"/>
+			</div>
+		</div>
+		<div class="fapp_input_buttons">
+			<div class="fapp_input_submit">
+				<div class="fapp_input_check"></div>
+			</div>
+			<div class="fapp_input_cancel">
+				<div class="fapp_input_cross"></div>
+			</div>
+		</div>
 	</div>
 </div>
