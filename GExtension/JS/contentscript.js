@@ -1,7 +1,7 @@
 //SAT URLs
 const iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
 const weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
-const valid_sat_login = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+const valid_sat_login = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
 const logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
 const valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
 
@@ -25,6 +25,8 @@ const clientY = 55;//How much the panel must scroll per client
 var acumY = 0;//The actual position of highlighted element
 var prev_e;//To prevent double event firing
 
+var sync = {get_clients:false, get_template:false};
+
 //Functions
 function build_menu(){
 	var get_side_bar = new XMLHttpRequest();
@@ -45,7 +47,7 @@ function build_menu(){
 		document.getElementById("fapp_logo").src = fapp_logo;
 		
 		//Insert Clients
-		refresh_clients();
+		while(!refresh_clients()){alert("Still not refreshed");};
 	};
 	get_side_bar.send();
 }
@@ -83,9 +85,14 @@ function refresh_clients(){
 					document.getElementById("fapp_search_input_field").value = "";
 					status_image.src = status_ready;					
 				}
+				sync.get_template = true;
 			});
+			while(!sync.get_template){alert("no template");};
 		}
+		sync.get_clients = true;
 	});
+	while(!sync.get_clients){alert("no clients");};
+	return true;
 }
 
 function get_search_results(){
@@ -259,7 +266,7 @@ function add_listeners(){
 	
 	//Client Add edit delete
 	document.getElementById("fapp_client_add").addEventListener('click',function(e){
-		if(prev_e != e.timeStamp) throw_popup('add');
+		if(prev_e != e.timeStamp){throw_popup('add')}
 		prev_e = e.timeStamp;
 		return false;
 	});
@@ -365,21 +372,22 @@ function throw_popup(addedit, client){
 			document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(e){
 				document.body.removeChild(black_scrn);
 			});
+			document.getElementById("fapp_input_repass").addEventListener('keypress',function(e){
+				var repass = document.getElementById("fapp_input_repass");
+				repass.style.backgroundColor = "rgba(255,255,255,0.2)";
+			});
 			document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(e){
 				var pass = document.getElementById("fapp_input_pass");
 				var repass = document.getElementById("fapp_input_repass");
 				if(pass.value == repass.value){
 					query_client_change(black_scrn, addedit, client);
+					//wait
+					document.body.removeChild(dataNode);
 				}else{
 					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
 				}
 			});
-			document.getElementById("fapp_input_repass").addEventListener('keypress',function(e){
-				var repass = document.getElementById("fapp_input_repass");
-				repass.style.backgroundColor = "rgba(255,255,255,0.2)";
-			});
 		}
-		return false;
 	});
 	return false;
 }
@@ -409,25 +417,20 @@ function query_client_change(dataNode, option, client){
 		}else{
 			switch(response.answer){
 				case 'Scs_1'://Todo chingón
-					refresh_clients();
-					document.body.removeChild(dataNode);
+					while(!refresh_clients()){alert("Still not refreshed");};
 					break;
 				case 'Scs_0'://No se pudo
 					status_image.src = status_wrong;
 					alert("No es posible realizar la acción en este momento. Por favor intente más tarde");
-					document.body.removeChild(dataNode);
 					break;
 				case 'Err_7'://No se agrega porque ya hay!
 					status_image.src = status_ready;
 					alert("¡Ya tienes registrado este RFC!");
-					document.body.removeChild(dataNode);
 					break;
 				default:
 					status_image.src = status_wrong;
-					document.body.removeChild(dataNode);
 			}
 		}
-		return false;
 	});
 	return false;
 }
