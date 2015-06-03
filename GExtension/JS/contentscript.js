@@ -355,7 +355,6 @@ function add_listeners(){
 		if(name.value != ""){
 			if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
 				if(pass.value == repass.value){
-					debugger;
 					if(addedit == 'add' && pass.value != ""){
 						var duplicated = client_exists(name.value, rfc.value, null);
 						(!duplicated) ? query_client_change(addedit, client) : alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
