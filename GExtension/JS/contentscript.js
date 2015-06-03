@@ -227,7 +227,7 @@ function add_listeners(){
 				}
 			}
 		}
-		
+		sel_index = 0; acumY = 0;
 	});
 	
 	//Search bar tracking changes
@@ -245,7 +245,8 @@ function add_listeners(){
 			case 13: //Enter
 				var res = get_search_results();
 				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
-				if(class_parts[1] == "fapp_client_normal"){
+				if(class_parts[1] == "fapp_client_normal"){//If not highlighted
+					sel_index = 0; acumY = 0;
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
 				}else{//If already highlighted
 					(class_parts[0] == "fapp_client_box") ? selected[sel_index].className = "fapp_client_selected " + class_parts[1] : selected[sel_index].className = "fapp_client_box " + class_parts[1];
@@ -349,14 +350,18 @@ function add_listeners(){
 		
 		trim_whites(name, true);
 		trim_whites(rfc, false);
+		rfc.value = rfc.value.toUpperCase();
 					
 		if(name.value != ""){
 			if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
 				if(pass.value == repass.value){
+					debugger;
 					if(addedit == 'add' && pass.value != ""){
-						query_client_change(addedit, client);
+						var duplicated = client_exists(name.value, rfc.value, null);
+						(!duplicated) ? query_client_change(addedit, client) : alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
 					}else if(addedit == 'edit'){
-						query_client_change(addedit, client);
+						var duplicated = client_exists(name.value, rfc.value, client.id);
+						(!duplicated) ? query_client_change(addedit, client) : alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
 					}else{
 						pass.style.backgroundColor = "rgba(255,166,155,0.5)";
 					}
@@ -372,11 +377,20 @@ function add_listeners(){
 	});
 }
 
+function client_exists(name, rfc, omitID){
+	for(i = 0;i < json_arr.length;i++){
+		if(omitID == json_arr[i].id) continue;
+		if(name == json_arr[i].name) return name;
+		if(rfc == json_arr[i].rfc) return rfc;
+	}
+	return false;
+}
+
 function trim_whites(inputElement, extra){
 	if(extra){
 		inputElement.value = inputElement.value.replace(/\s\s+/g," ");
-		while(inputElement.value[0] == " "){inputElement.value = inputElement.value.replaceAt(0,"")};
-		while(inputElement.value[inputElement.value.length - 1] == " "){inputElement.value = inputElement.value.replaceAt(inputElement.value.length - 1,"")};
+		while(inputElement.value[0] == " "){inputElement.value = inputElement.value.replaceAt(0,"");};
+		while(inputElement.value[inputElement.value.length - 1] == " "){inputElement.value = inputElement.value.replaceAt(inputElement.value.length - 1,"");};
 	}else{
 		inputElement.value = inputElement.value.replace(/ /g,"");
 	}
@@ -412,7 +426,7 @@ String.prototype.replaceAt = function(index, character){
 	}else{
 		return this.substr(0,index) + character + this.substr(index+1);
 	}	
-}
+};
 
 function set_selected_num(){
 	var items = document.getElementsByClassName("fapp_client_selected"); 
