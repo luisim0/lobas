@@ -469,6 +469,21 @@
 	overflow: hidden;
 }
 
+.fapp_pass_cover{
+	position: absolute;
+	height: 50px;
+	width: 354px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 12pt;
+	border: black dashed thin;
+	border-radius: 15px;
+	background-color: beige;
+	color: black;
+	cursor: pointer;
+	display: none;
+}
+
 /*IDs*/
 #fapp_main_panel{
 	height: 97vh;

@@ -24,9 +24,6 @@ var prev_search = "";
 var sel_index = 0;
 const clientY = 55;//How much the panel must scroll per client
 var acumY = 0;//The actual position of highlighted element
-var prev_e;//To prevent double event firing
-
-var sync = {get_clients:false, get_template:false};
 
 //Functions
 function check_page(){
@@ -374,6 +371,11 @@ function add_listeners(){
 			name.style.backgroundColor = "rgba(255,166,155,0.5)";
 		}
 	});
+	
+	//Client input, password reveal
+	document.getElementById("fapp_passcover").addEventListener('click',function(){
+		document.getElementById("fapp_passcover").style.display = "none";
+	});
 }
 
 function client_exists(name, rfc, omitID){
@@ -476,6 +478,7 @@ function throw_popup(addedit, client){
 	if(addedit == 'edit'){
 		name.value = client.getElementsByClassName("fapp_client_name_holder")[0].innerHTML;
 		rfc.value = client.getElementsByClassName("fapp_client_RFC")[0].innerHTML;
+		document.getElementById("fapp_passcover").style.display = "block";
 	}else{
 		name.value = "";
 		rfc.value = "";
@@ -546,5 +549,32 @@ function query_client_change(option, client){
 	return false;
 }
 
+function create_stack(){
+	return {
+			current_id: null,
+			current_state: "stack_gen",
+			state_status: "idle",
+			states: ["stack_gen","login","emrec","dates","download","logout"],
+			ids: []
+			};
+}
+
+function gen_stack(){
+	var selected = document.getElementsByClassName("fapp_client_selected");
+	if(selected.length != 0){
+		var stack = create_stack();
+		for(i = 0;i < selected.length;i++){
+			stack.ids.push(parseInt(selected[i].id));
+		}
+		stack.current_id = stack.ids[0];
+		stack.state_status = "finished";
+		return stack;
+	}else{
+		alert("Seleccione al menos un cliente para iniciar la descarga");
+		return false;
+	}
+}
+
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
+//chrome.storage.local.set({stack:gen_stack()});
 check_page();
