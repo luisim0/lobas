@@ -555,6 +555,7 @@ function create_stack(){
 			current_state: "stack_gen",
 			state_status: "idle",
 			states: ["stack_gen","login","emrec","dates","download","logout"],
+			//Add expected pages
 			ids: []
 			};
 }
@@ -578,3 +579,4 @@ function gen_stack(){
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
 //chrome.storage.local.set({stack:gen_stack()});
 check_page();
+//check page must be aware of which page is expected
