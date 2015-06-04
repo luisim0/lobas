@@ -56,9 +56,18 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 	}else if(message.action == 'prompt_message'){
 		var opt = {
 		  type: "basic",
-		  title: "Inicie sesión en Facturapp",
-		  message: "Inicie sesión en Facturapp usando el ícono en la barra de navegación.",
+		  title: message.title,
+		  message: message.msg,
 		  iconUrl: icon_in
+		};
+		chrome.notifications.create(opt);
+	}else if(message.action == 'show_progress'){
+		var opt = {
+			type: "progress",
+			title: message.title,
+			message: message.msg,
+			iconUrl: icon_in,
+			progress: message.progress
 		};
 		chrome.notifications.create(opt);
 	}

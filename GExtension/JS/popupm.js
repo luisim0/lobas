@@ -228,6 +228,6 @@ function is_session_active(login_code){
 }
 
 //Event Listeners
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function(){
 	call_page(0);
 });

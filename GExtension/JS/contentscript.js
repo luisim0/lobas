@@ -26,67 +26,6 @@ const clientY = 55;//How much the panel must scroll per client
 var acumY = 0;//The actual position of highlighted element
 
 //Functions
-function check_page(){
-	if(window.location.href.indexOf(iqaccess_url) == 0){
-		//We reached the netiq access manager... :(
-		window.location.replace(logged_sat_url);
-		return false;
-	}else if(window.location.href.indexOf(weird_sat_login) == 0){
-		//Ended session
-		window.location.replace(valid_sat_login);
-		return false;
-	}else{
-		//Normal entrance
-		is_session_active();
-		return true;
-	}
-}
-
-function is_session_active(){
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
-	chrome.extension.sendMessage(jsoned,function(response){
-		if(response.answer == 'Error'){
-			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
-			return false;
-		}else{
-			var yesno = response.answer.split("_")[1];
-			if(yesno == "0"){//There's no session
-				//instruct to open session
-				if(window.location.href.indexOf(valid_sat_token) == 0){
-					jsoned = JSON.parse('{"action":"prompt_message"}');
-					chrome.extension.sendMessage(jsoned);
-				}
-				return false;
-			}else{//There's session
-				build_menu();
-				return true;
-			}
-		}
-	});
-}
-
-function build_menu(){
-	var get_side_bar = new XMLHttpRequest();
-	get_side_bar.open("GET", sidebar_URL, true);
-	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	get_side_bar.onload = function(argument){
-		//Insert structure
-		document.body.innerHTML += get_side_bar.responseText.replace(/[\r\n\t]/g, "");
-		
-		//Save RFC options
-		chrome.storage.sync.get("RFC",function(data){
-			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
-		});
-		
-		//Place/edit images
-		document.getElementById("fapp_logo").src = fapp_logo;
-		
-		//Insert Clients
-		refresh_clients(true);
-	};
-	get_side_bar.send();
-}
-
 function refresh_clients(listeners){
 	var status_image = document.getElementById("fapp_status");
 	status_image.src = status_loading;
@@ -347,6 +286,9 @@ function add_listeners(){
 	document.getElementById("fapp_input_pass").addEventListener('focus',function(){
 		document.getElementById("fapp_passcover").style.display = "none";
 	});
+	
+	//DOWNLOAD!
+	document.getElementById("test").addEventListener('click',download_process);
 }
 
 function client_input_check(){
@@ -573,17 +515,27 @@ function query_client_change(option, client){
 	return false;
 }
 
+//----------------------------------------------------------------------------------------//
+//------------------------------------Download Section------------------------------------//
+//-- Aquí voy!
+//-- Todo el rollo está en check page
+//-- Fabricar el intérprete del stack o hardcodearlo
+//-- Descargar y guardar en base de datos
+
 function create_stack(){
 	return {
-			current_id: null,
-			current_state: "stack_gen",
-			state_status: "idle",
+			current_elem: null,
+			current_state: 0,
+			download_active: false,
 			states: ["stack_gen","login","emrec","dates","download","logout"],
-			states_urls: ["","","","","",""],
+			states_urls: ["",
+				"",
+				"https://portalcfdi.facturaelectronica.sat.gob.mx/",//https://portalcfdi.facturaelectronica.sat.gob.mx/Consulta.aspx
+				"https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaEmisor.aspx","",""],
 			states_valid: ["","","","","",""],
 			states_submits: ["","","","","",""],
-			//Add expected pages
-			ids: []
+			ids: [],
+			rfcs: []
 			};
 }
 
@@ -593,9 +545,10 @@ function gen_stack(){
 		var stack = create_stack();
 		for(i = 0;i < selected.length;i++){
 			stack.ids.push(parseInt(selected[i].id));
+			stack.rfcs.push(selected[i].getElementsByClassName("fapp_client_RFC")[0].innerHTML);
 		}
-		stack.current_id = stack.ids[0];
-		stack.state_status = "finished";
+		stack.current_elem = 1;
+		stack.download_active = true;
 		return stack;
 	}else{
 		alert("Seleccione al menos un cliente para iniciar la descarga");
@@ -603,7 +556,87 @@ function gen_stack(){
 	}
 }
 
+function download_process(){
+	var stack = gen_stack();
+	if(stack){
+		chrome.storage.local.set({stack:stack});
+		var jsoned = JSON.parse('{"action":"prompt_message","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan"}');
+		chrome.extension.sendMessage(jsoned);
+		//jsoned = JSON.parse('{"action":"show_progress","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan","progress":30}');
+		//chrome.extension.sendMessage(jsoned);
+	}
+	//If successfull: document.getElementById("test").removeEventListener('click',download_process);
+}
+
+function check_page(){
+	chrome.storage.local.get("stack",function(data){
+		if(data["stack"] != {}){//stack exists
+			var stack = data["stack"];
+			if(stack.download_active){
+				var curr_url = window.location.href;
+				var desired_url = stack.states_urls[stack.current_state];
+				debugger;
+				if(curr_url.indexOf(desired_url)){
+					
+				}
+				
+			}else{
+				//Normal Entrace
+				chrome.storage.local.remove("stack");
+				is_session_active();
+			}
+		}else{
+			//Normal Entrace
+			is_session_active();
+		}
+	});
+}
+
+function is_session_active(){
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == 'Error'){
+			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
+			return false;
+		}else{
+			var yesno = response.answer.split("_")[1];
+			if(yesno == "0"){//There's no session
+				//instruct to open session
+				if(window.location.href.indexOf(valid_sat_token) == 0){
+					jsoned = JSON.parse('{"action":"prompt_message","title":"Inicie sesión en Facturapp","msg":"Inicie sesión en Facturapp usando el ícono en la barra de navegación."}');
+					chrome.extension.sendMessage(jsoned);
+				}
+				return false;
+			}else{//There's session
+				build_menu();
+				return true;
+			}
+		}
+	});
+}
+
+function build_menu(){
+	var get_side_bar = new XMLHttpRequest();
+	get_side_bar.open("GET", sidebar_URL, true);
+	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	get_side_bar.onload = function(argument){
+		//Insert structure
+		document.body.innerHTML += get_side_bar.responseText.replace(/[\r\n\t]/g, "");
+		
+		//Save RFC options
+		chrome.storage.sync.get("RFC",function(data){
+			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
+		});
+		
+		//Place/edit images
+		document.getElementById("fapp_logo").src = fapp_logo;
+		
+		//Insert Clients
+		refresh_clients(true);
+	};
+	get_side_bar.send();
+}
+
 //Main! - It goes check_page() >> is_session_active() >> build_menu()
-//chrome.storage.local.set({stack:gen_stack()});
 check_page();
 //check page must be aware of which page is expected
