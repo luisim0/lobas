@@ -318,6 +318,7 @@ function add_listeners(){
 	
 	//Add client input handlers
 	document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(){
+		document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
 		hide_popup();
 	});
 	document.getElementById("fapp_input_name").addEventListener('keypress',function(){
@@ -336,46 +337,65 @@ function add_listeners(){
 		var repass = document.getElementById("fapp_input_repass");
 		repass.style.backgroundColor = "rgba(255,255,255,0.2)";
 	});
-	document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(){
-		var name = document.getElementById("fapp_input_name");
-		var rfc = document.getElementById("fapp_input_rfc");
-		var pass = document.getElementById("fapp_input_pass");
-		var repass = document.getElementById("fapp_input_repass");
-		
-		var client = set_selected_num().items[0];
-		var addedit = document.getElementsByClassName("fapp_input_main_visible")[0].id;
-		
-		trim_whites(name, true);
-		trim_whites(rfc, false);
-		rfc.value = rfc.value.toUpperCase();
-					
-		if(name.value != ""){
-			if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
-				if(pass.value == repass.value){
-					if(addedit == 'add' && pass.value != ""){
-						var duplicated = client_exists(name.value, rfc.value, null);
-						(!duplicated) ? query_client_change(addedit, client) : alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
-					}else if(addedit == 'edit'){
-						var duplicated = client_exists(name.value, rfc.value, client.id);
-						(!duplicated) ? query_client_change(addedit, client) : alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
-					}else{
-						pass.style.backgroundColor = "rgba(255,166,155,0.5)";
-					}
-				}else{
-					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
-				}
-			}else{
-				rfc.style.backgroundColor = "rgba(255,166,155,0.5)";
-			}
-		}else{
-			name.style.backgroundColor = "rgba(255,166,155,0.5)";
-		}
-	});
+	
+	//fapp_input_check - 'click' event is placed on throw-popup
 	
 	//Client input, password reveal
 	document.getElementById("fapp_passcover").addEventListener('click',function(){
 		document.getElementById("fapp_passcover").style.display = "none";
 	});
+	document.getElementById("fapp_input_pass").addEventListener('focus',function(){
+		document.getElementById("fapp_passcover").style.display = "none";
+	});
+}
+
+function client_input_check(){
+	var name = document.getElementById("fapp_input_name");
+	var rfc = document.getElementById("fapp_input_rfc");
+	var pass = document.getElementById("fapp_input_pass");
+	var repass = document.getElementById("fapp_input_repass");
+	
+	var client = set_selected_num().items[0];
+	var addedit = document.getElementsByClassName("fapp_input_main_visible")[0].id;
+	
+	trim_whites(name, true);
+	trim_whites(rfc, false);
+	rfc.value = rfc.value.toUpperCase();
+				
+	if(name.value != ""){
+		if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
+			if(pass.value == repass.value){
+				if(addedit == 'add' && pass.value != ""){
+					var duplicated = client_exists(name.value, rfc.value, null);
+					if(!duplicated){
+						document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
+						query_client_change(addedit, client);
+						return true;
+					}else{
+						alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
+					}
+				}else if(addedit == 'edit'){
+					var duplicated = client_exists(name.value, rfc.value, client.id);
+					if(!duplicated){
+						document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
+						query_client_change(addedit, client)
+						return true;
+					}else{
+						alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
+					}
+				}else{
+					pass.style.backgroundColor = "rgba(255,166,155,0.5)";
+				}
+			}else{
+				repass.style.backgroundColor = "rgba(255,166,155,0.5)";
+			}
+		}else{
+			rfc.style.backgroundColor = "rgba(255,166,155,0.5)";
+		}
+	}else{
+		name.style.backgroundColor = "rgba(255,166,155,0.5)";
+	}
+	return false;
 }
 
 function client_exists(name, rfc, omitID){
@@ -482,6 +502,7 @@ function throw_popup(addedit, client){
 	}else{
 		name.value = "";
 		rfc.value = "";
+		document.getElementById("fapp_passcover").style.display = "none";
 	}
 	pass.value = "";
 	repass.value = "";
@@ -498,6 +519,9 @@ function throw_popup(addedit, client){
 	
 	//Identify it
 	document.getElementsByClassName("fapp_input_main_visible")[0].id = addedit;
+	
+	//Special non-bouncing listeners:
+	document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',client_input_check);
 }
 
 function hide_popup(){
@@ -555,6 +579,9 @@ function create_stack(){
 			current_state: "stack_gen",
 			state_status: "idle",
 			states: ["stack_gen","login","emrec","dates","download","logout"],
+			states_urls: ["","","","","",""],
+			states_valid: ["","","","","",""],
+			states_submits: ["","","","","",""],
 			//Add expected pages
 			ids: []
 			};
