@@ -15,7 +15,11 @@
   	"128": "/Icons/icon128.png"
   },
   "content_scripts":[{
-  	"matches":["https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*"],
+  	"matches":[
+  		"https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*",
+  		"https://cfdiau.sat.gob.mx/nidp/app?*",
+  		"https://portalcfdi.facturaelectronica.sat.gob.mx/*"
+  	],
   	"js":["/JS/contentscript.js"],
   	"css":["/CSS/menu_style.css"],
   	"run_at":"document_end"
