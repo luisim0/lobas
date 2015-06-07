@@ -69,6 +69,20 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 			iconUrl: icon_in,
 			progress: message.progress
 		};
-		chrome.notifications.create(opt);
+		if(message.progress != 0){
+			chrome.storage.local.get("progid",function(data){
+				if(data["progid"]){
+					chrome.notifications.update(data["progid"],opt);
+				}else{
+					chrome.notifications.create(opt,function(id){
+						chrome.storage.local.set({progid:id});
+					});
+				}
+			});
+		}else{
+			chrome.notifications.create(opt,function(id){
+				chrome.storage.local.set({progid:id});
+			});
+		}
 	}
 });

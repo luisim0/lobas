@@ -1,6 +1,8 @@
 //SAT URLs
 const login_con_url = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
-const login_fiel_url = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATx509Custom";
+const login_fiel_url = "SATx509Custom";//Token
+const login_1_pass = "https://cfdiau.sat.gob.mx/nidp/app/login?";
+const login_2_pass = "https://cfdiau.sat.gob.mx/nidp/wsfed_redir_cont_portalcfdi.jsp?";
 const logged_1_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
 const logged_2_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/Consulta.aspx";
 const emi_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaEmisor.aspx";
@@ -31,6 +33,7 @@ var json_arr;
 var prev_search = "";
 var sel_index = 0;
 var acumY = 0;//The actual position of highlighted element
+var count = 0;//Invoices counter for download
 
 //Functions
 function refresh_clients(listeners){
@@ -105,7 +108,7 @@ function add_listeners(){
 		document.getElementById("fapp_cat_1").click();
 	});
 	
-	//Category selectors - I think this must be restated!!
+	//Category selectors
 	var cat_links = document.getElementsByClassName("fapp_category_container");
 	var n = cat_links.length;
 	for(i = 0; i < n; i++){
@@ -125,7 +128,12 @@ function add_listeners(){
 					cat_links[j].firstChild.style.cursor = "pointer";
 				}else{
 					(has_menu.indexOf(j) > -1) ? cat_links[j].nextSibling.className = "fapp_menu_active" : null;
-					(has_menu.indexOf(j) > -1) ? del[j].className = "fapp_data_container_wmenu" : del[j].className = "fapp_data_container_populated";
+					if(has_menu.indexOf(j) > -1){
+						del[j].className = "fapp_data_container_wmenu";
+						document.getElementById("fapp_search_input_field").focus();
+					}else{
+						del[j].className = "fapp_data_container_populated";
+					}
 					cat_links[j].firstChild.style.color = "#16495C";
 					cat_links[j].firstChild.style.cursor = "default";
 				}
@@ -524,10 +532,6 @@ function query_client_change(option, client){
 
 //----------------------------------------------------------------------------------------//
 //------------------------------------Download Section------------------------------------//
-//-- Aquí voy!
-//-- Todo el rollo está en check page
-//-- Fabricar el intérprete del stack o hardcodearlo
-//-- Descargar y guardar en base de datos
 
 function create_stack(){
 	return {
@@ -536,7 +540,14 @@ function create_stack(){
 			download_active: false,
 			ids: [],
 			rfcs: [],
+			state_urls:[
+				login_con_url,
+				logged_1_url,
+				emi_url,
+				rec_url
+			],
 			error: false,
+			finished: false,
 			date_start: "01/03/2015",
 			date_end: "31/03/2015",
 			month: "3"
@@ -575,37 +586,42 @@ function download_process(){
 }
 
 function check_page(){
-	debugger;
+	console.log(Date.now() + " - Contacted page: " + window.location.href);
 	chrome.storage.local.get("stack",function(data){
-		if(data["stack"]){//stack exists
+		if(data["stack"]){//stack exists - it may be new or an error stack
+			console.log(Date.now() + " - Stack exists");
 			var stack = data["stack"];
 			if(stack.download_active && !stack.error){
+				console.log(Date.now() + " - Stack detected, moving to state " + stack.current_state);
 				switch(stack.current_state){//Save stack process must be included inside each function
-					case 0: state_login(stack) ?		null/*navigate*/ : null; break;
-					case 1: state_logged_emi(stack) ?	null/*navigate*/ : null; break;
-					case 2: state_emi_down(stack) ?		null/*navigate*/ : null; break;
-					case 3: state_logged_rec(stack) ?	null/*navigate*/ : null; break;
-					case 4: state_logout(stack) ?		null/*navigate*/ : null; break;
+					case 0: state_login(stack); break;
+					case 1: state_logged_emi(stack); break;
+					case 2: state_emi_down(stack); break;
+					case 3: state_rec_down(stack); break;
+					case 4: chrome.storage.local.remove("stack"); break;
+					//case 4: state_logout(stack); break;
 					default: null;//Error
 				}
-			}else if(stack.download_active){
-				if(confirm('Existe un proceso de descarga no completado. ¿Desea continuar ahora?')){
+			}else if(stack.download_active){//Error stack - this should depart from login page exclusively!!
+				console.log(Date.now() + " - The stack file reported an error");
+				if(confirm('Ocurrió un error pero existe un proceso de descarga no completado. ¿Desea continuar ahora?')){
 					stack.error = false;
-					stack.current_state = 0;
-					chrome.storage.local.set({stack:stack},function(){
-						window.location.href = login_con_url;
+					console.log(Date.now() + " - User wanted to continue process, page will reload");
+					chrome.storage.local.set({stack:stack},function(){//try to reach page again
+						window.location.href = stack.state_urls[stack.current_state];
 					});
 				}else{
-					if(confirm('¿Desea eliminar el proceso previo de descarga? Puede elegir no eliminarlo, arreglar manualmente el problema y lanzar Facturapp de nuevo.')){
-						chrome.storage.local.remove("stack");
-						is_session_active();
-					}
+					console.log(Date.now() + " - User does not want to continue, stack removed");
+					chrome.storage.local.remove("stack");
+					is_session_active();
 				}
 			}else{//Normal Entrace
+				console.warn(Date.now() + " - Something weird happened with stack and it's been eliminated");
 				chrome.storage.local.remove("stack");
 				is_session_active();
 			}
-		}else{//Normal Entrace
+		}else{//Normal Entrace - no stack
+			console.log(Date.now() + " - No stack detected, checking for session active");
 			window.location.href.indexOf(login_con_url) != -1 ? is_session_active() : null;
 		}
 	});
@@ -613,75 +629,108 @@ function check_page(){
 
 function state_login(stack){
 	if(window.location.href.indexOf(login_con_url) != -1){//Todo en orden
+		console.log(Date.now() + " - state_login: Reached login page");
 		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
 		jsoned.url = get_pass_php;
 		jsoned.data[0] = {name:"ClientID",value:stack.ids[stack.current_elem]};
-		chrome.extension.sendMessage(jsoned,function(response){
+		chrome.extension.sendMessage(jsoned,function(response){//Ask for password
 			if(response.answer == 'Error' || response.answer.indexOf('<br>') != -1){
-				stack.error = true; stack.current_state = 0;
+				console.warn(Date.now() + " - state_login: Asked for user password, retrieved error");
+				stack.error = true;
 				chrome.storage.local.set({stack:stack});
-				alert("No se pudo establecer contacto con los servidores de Facturapp. Por favor inténtelo más tarde.");
-				window.location.href = login_con_url;
+				window.location.href = stack.state_urls[stack.current_state];
 			}else{
-				document.getElementsByName('Ecom_User_ID')[0].value = stack.rfcs[stack.current_elem];
-				document.getElementsByName('Ecom_Password')[0].value = response.answer;
-				stack.current_state = 1;
-				chrome.storage.local.set({stack:stack},function(){
-					document.getElementById('submit').click();
-				});
+				console.log(Date.now() + " - state_login: Pasting user data values");
+				if(document.getElementsByName('Ecom_User_ID')){//This prevents the system to throw error if page is redirected by SAT
+					document.getElementsByName('Ecom_User_ID')[0].value = stack.rfcs[stack.current_elem];
+					document.getElementsByName('Ecom_Password')[0].value = response.answer;
+					//----------------------------------------------------------------------------------------------------------------
+					stack.current_state = 2;//I'm skipping one page...----------------------------------------------------------------
+					//----------------------------------------------------------------------------------------------------------------
+					chrome.storage.local.set({stack:stack},function(){
+						console.log(Date.now() + " - state_login: Moving to state: " + stack.current_state);
+						document.getElementById('submit').click();
+					});
+				}
 			}
 		});
 		return true;
 	}else if(window.location.href.indexOf(login_fiel_url) != -1){//Cambiar a acceso por contraseña
-		window.location.href = login_con_url;
-		return true;
+		console.warn(Date.now() + " - state_login: Wrong URL, reached FIEL page. Redirecting...");
+		window.location.href = stack.state_urls[stack.current_state];
+		return true;	
 	}else{//Error
-		if(confirm('Ocurrió un error al intentar alcanzar la página de descargas. ¿Desea intentarlo de nuevo?')){
-			stack.error = true; stack.current_state = 0;
-			chrome.storage.local.set({stack:stack},function(){
-				window.location.href = login_con_url;
-			});
-			return true;
-		}else{
-			stack.error = true; stack.current_state = 0;
-			chrome.storage.local.set({stack:stack});
-		}
-		return false;
+		console.warn(Date.now() + " - state_login: Reached weird page: " + window.location.href);
+		stack.error = true;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_login: Moving to login page");
+			window.location.href = stack.state_urls[stack.current_state];
+		});
+		return true;
 	}
 }
 
+//This could be deleted!
 function state_logged_emi(stack){
 	if(window.location.href.indexOf(logged_1_url) != -1 || window.location.href.indexOf(logged_2_url) != -1){//Da right page
-		stack.current_state = 2;
+		console.log(Date.now() + " - state_logged: Reached logged page");
 		document.getElementById('ctl00_MainContent_RdoTipoBusquedaEmisor').click();
+		stack.current_state = 2;
 		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_logged: Emited invoices selected, moving to state: " + stack.current_stack);
 			document.getElementById('ctl00_MainContent_BtnBusqueda').click();
 		});
 		return true;
 	}else if(window.location.href.indexOf(iqaccess_url) != -1){//Entramos al iqaccess manager
-		window.location.href = logged_1_url;
-		return true;
-	}else{//Sepa la chingada o la contraseña es incorrecta
-		if(confirm('Ocurrió un error al intentar alcanzar la página de descargas. ¿Desea intentarlo de nuevo?')){
-			stack.error = true; stack.current_state = 1;//-----------------------------------------------------------------------------------------------------
-			chrome.storage.local.set({stack:stack},function(){
-				window.location.href = logged_1_url;
-			});
-			return true;
-		}else{
+		console.warn(Date.now() + " - state_logged: Reached the iq access manager: " + window.location.href);
+		window.location.href = stack.state_urls[stack.current_state];
+		return false;
+	}else if(window.location.href.indexOf(login_con_url) != -1 && document.getElementsByClassName("contrasena")[0].getElementsByTagName("a")[0].innerHTML == "Fiel"){//Error SAT o Contraseña incorrecta
+		console.warn(Date.now() + " - state_logged: Reached login page, password is possibly wrong. Prompt user for action");
+		if(confirm('Es posible que la contraseña del RFC ' + stack.rfcs[stack.current_elem] + ' sea incorrecta. ¿Desea pasar al siguiente usuario?')){
+			console.warn(Date.now() + " - state_logged: User selected to skip user " + stack.rfcs[stack.current_elem]);
+			if(stack.current_elem < stack.ids.length - 1){
+				stack.current_elem += 1;
+				console.log(Date.now() + " - state_logged: Next user to download is: " + stack.rfcs[stack.current_elem]);
+			}else{
+				stack.finished = true;
+				console.log(Date.now() + " - state_logged: No more users stack is finished");
+			}
 			stack.error = true; stack.current_state = 0;
-			chrome.storage.local.set({stack:stack});
+			chrome.storage.local.set({stack:stack},function(){
+				console.log(Date.now() + " - state_logged: Stack state has been refreshed to login, moving to state: " + stack.current_state);
+				window.location.href = stack.state_urls[stack.current_state];
+			});
+			return false;
+		}else{
+			console.warn(Date.now() + " - state_logged: User selected to delete stack");
+			chrome.storage.local.remove("stack");
+			return false;
 		}
+		return false;
+	}else if(window.location.href.indexOf(login_1_pass) != -1 || window.location.href.indexOf(login_2_pass) != 1){
+		console.log(Date.now() + " - state_logged: Reached a known unharmful page. SAT site is redirecting...");
+		null;//Wait for it to reload... stupid SAT!
+	}else{//Sepa la chingada.. !
+		console.warn(Date.now() + " - state_logged: Reached an unknown site: " + window.location.href);
+		stack.error = true; stack.current_state = 0;
+		chrome.storage.local.set({stack:stack});
+		console.warn(Date.now() + " - state_logged: Moving to state: " + stack.current_state);
 		return false;
 	}
 }
 
 function state_emi_down(stack){
-	if(window.location.href.indexOf(emi_url) != -1){//Todo bien!		
-		var delay = 0; const delay_max = 10;//seconds
+	if(window.location.href.indexOf(emi_url) != -1){//Todo bien!
+		console.log(Date.now() + " - state_emi: Reached the right page");
 		var folioDisabled = new CustomEvent('isNowDisabled');
 		var resultsUpdated = new CustomEvent('updated');
-		document.addEventListener('isNowDisabled',function(){
+		var uploadRequest = new CustomEvent('uprequested');
+		var xmlReq = new XMLHttpRequest();//This must be sent from here to mantain logged session
+		
+		console.log(Date.now() + " - state_emi: Loading listeners...");
+		document.addEventListener('isNowDisabled',function(){//Once the page is in date mode
+			console.log(Date.now() + " - state_emi: Page is in date mode, getting invoices...");
 			document.getElementById('ctl00_MainContent_CldFechaInicial2_Calendario_text').value = stack.date_start;
 			document.getElementById('ctl00_MainContent_CldFechaFinal2_Calendario_text').value = stack.date_end;
 			document.getElementsByClassName('sbSelector')[3].innerHTML = '23';
@@ -689,102 +738,275 @@ function state_emi_down(stack){
 			document.getElementsByClassName('sbSelector')[5].innerHTML = '59';
 			document.getElementById('ctl00_MainContent_BtnBusqueda').click();
 		});
-		document.addEventListener('updated',function(){
+		
+		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
 			var facs = document.getElementsByName('BtnDescarga');
-			if(facs.length != 0){
-				for(i = 0;i < facs.length;i++){
-					//Get the link
-					var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[i].attributes[6].value.split("'")[1];
-					var data = document.getElementsByClassName("BtnDescarga")[0].parentNode.parentNode.parentNode.children;
-					var folio = data[1].children[0].innerHTML; var valid;
-					data[data.length-1].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
-					var xmlReq = new XMLHttpRequest();
-					xmlReq.open("GET",link,true);
-					xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-					
-					xmlReq.onload = function(){
-						var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
-						jsoned.data[0] = {name:"Folio",value:folio};
-						jsoned.data[1] = {name:"Validity",value:valid};
-						jsoned.data[2] = {name:"XML",value:xmlReq.responseText};
-						chrome.extension.sendMessage(jsoned,function(response){
-							debugger;
-							if(response.answer.indexOf('Scs') == -1){//Error writing database
-								//Report error in stack
-							}else{
-								
-								//Save file
-								//Let the For run
-							}
-						});
-					};
-					xmlReq.onerror = function(){
-						debugger;
-						//XML could not be read
-						//Report error in stack
-					};
-					
-					xmlReq.send();
-				}
-				//Ask for next step in stack
-			}else{//No results
-				//Ask for next step in stack
+			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
+			xmlReq.open("GET",link,true);
+			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+			console.log(Date.now() + " - state_emi: Requesting invoice: " + count);
+			xmlReq.send();
+		});
+		
+		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
+			var facs = document.getElementsByName('BtnDescarga');
+			if(facs.length != 0){//If there are invoices..
+				count = 0;
+				console.log(Date.now() + " - state_emi: Invoices have been displayed, acquiring...");
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				chrome.extension.sendMessage(jsoned);
+				document.dispatchEvent(uploadRequest);
+				return false;
+			}else{//No results -- Ask for next step in stack
+				console.log(Date.now() + " - state_emi: There are no invoices");
+				stack.current_state = 3;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_emi: Redirecting to 'Recibidas', state: " + stack.current_state);
+					window.location.href = stack.state_urls[stack.current_state];
+				});
+				return false;
 			}
 		});
 		
+		xmlReq.onload = function(){//El servidor entregó el xml
+			console.log(Date.now() + " - state_emi: Server delivered XML file of: " + count);
+			var data = document.getElementsByClassName("BtnDescarga")[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML; var valid;
+			data[data.length-1].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
+			
+			var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
+			jsoned.data[0] = {name:"Folio",value:folio};
+			jsoned.data[1] = {name:"Validity",value:valid};
+			jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+			chrome.extension.sendMessage(jsoned,function(response){//Write to database
+				console.log(Date.now() + " - state_emi: Started database writting process...");
+				if(response.answer.indexOf('Scs') == -1){//Error writing database
+					console.warn(Date.now() + " - state_emi: Database writting failed, servers possibly offline. Prompting user to decide reload...");
+					if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+						console.log(Date.now() + " - state_emi: User selected to reload. Moving to state: " + stack.current_state);
+						window.location.href = stack.state_urls[stack.current_state];
+					}else{
+						console.log(Date.now() + " - state_emi: User decided not to reload, marking error on stack and letting go");
+						stack.error = true;
+						chrome.storage.local.set({stack:stack});
+					}
+				}else{//Dispatch to next state if all invoices have been captured
+					console.log(Date.now() + " - state_emi: Effectively captured invoice: " + count);
+					count += 1;
+					
+					var allfacs = document.getElementsByName('BtnDescarga');
+					var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + allfacs.length + '"}');
+					jsoned.progress = parseInt(100/allfacs.length * count);
+					chrome.extension.sendMessage(jsoned);
+					if(count == allfacs.length){
+						console.log(Date.now() + " - state_emi: All invoices have been captured");
+						stack.current_state = 3;
+						chrome.storage.local.set({stack:stack},function(){
+							console.log(Date.now() + " - state_emi: Moving to state: " + stack.current_state);
+							window.location.href = stack.state_urls[stack.current_state];
+						});
+					}else{
+						document.dispatchEvent(uploadRequest);
+					}
+				}
+			});
+		};
+		xmlReq.onerror = function(){//No se pudo acceder a la factura
+			console.warn(Date.now() + " - state_emi: The invoice was not delivered from server. Reloading...");
+			window.location.href = stack.state_urls[stack.current_state];
+		};
+		
+		//The actual process------------------------------------------------------------------------------------
 		var track_changes = false;
 		var fac_number = 0;
 		var noDisp = "none";
 		setInterval(function(){
-			delay += 1;
 			if(document.getElementById('ctl00_MainContent_TxtUUID').disabled != track_changes){//toggle
+				console.log(Date.now() + " - state_emi: Page set in date mode");
 				track_changes = document.getElementById('ctl00_MainContent_TxtUUID').disabled;
 				document.dispatchEvent(folioDisabled);
 			}
 			if(document.getElementsByName('BtnDescarga').length != fac_number || document.getElementById("ctl00_MainContent_PnlNoResultados").style.display != noDisp){
+				console.log(Date.now() + " - state_emi: Invoices have loaded");
 				fac_number = document.getElementsByName('BtnDescarga').length;
 				noDisp = document.getElementById("ctl00_MainContent_PnlNoResultados").style.display;
 				document.dispatchEvent(resultsUpdated);
 			}
 		},1000);
 		
-		document.getElementById('ctl00_MainContent_RdoFechas').click();
+		document.getElementById('ctl00_MainContent_RdoFechas').click();//Select date mode - this triggers everything
 		
+	}else if(window.location.href.indexOf(iqaccess_url) != -1){//Reached iq access manager
+		console.warn(Date.now() + " - state_emi: Reached the iqaccess page. Redirecting...");
+		window.location.href = emi_url;
+	}else if(window.location.href.indexOf(login_1_pass) != -1 || window.location.href.indexOf(login_2_pass) != -1){
+		console.log(Date.now() + " - state_emi: Reached a known unharmful page. SAT site is redirecting...");
+		null;//Wait for it to reload... stupid SAT!
 	}else{//Sepa la chingada
-		if(confirm('Ocurrió un error al intentar alcanzar la página de descargas. ¿Desea intentarlo de nuevo?')){
-			stack.error = true; stack.current_state = 2;
-			chrome.storage.local.set({stack:stack},function(){
-				window.location.href = emi_url;
-			});
-			return true;
-		}else{
-			stack.error = true; stack.current_state = 0;
-			chrome.storage.local.set({stack:stack});
-		}
+		console.warn(Date.now() + " - state_emi: Reached a weird page " + window.location.href);
+		stack.error = true; stack.current_state = 2;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_emi: Trying to keep in track. Moving to state: " + stack.current_state);
+			window.location.href = stack.state_urls[stack.current_state];
+		});
 		return false;
 	}
 }
 
-function is_session_active(){
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = is_logged_php;
-	chrome.extension.sendMessage(jsoned,function(response){
-		if(response.answer == 'Error'){
-			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
-			return false;
-		}else{
-			var yesno = response.answer.split("_")[1];
-			if(yesno == "0"){//There's no session -- instruct to open session
-				if(window.location.href.indexOf(login_con_url) == 0){
-					jsoned = JSON.parse('{"action":"prompt_message","title":"Inicie sesión en Facturapp","msg":"Inicie sesión en Facturapp usando el ícono en la barra de navegación."}');
-					chrome.extension.sendMessage(jsoned);
-				}
+function state_rec_down(stack){
+	if(window.location.href.indexOf(rec_url) != -1){//Todo bien!
+		console.log(Date.now() + " - state_rec: Reached the right page");
+		var folioDisabled = new CustomEvent('isNowDisabled');
+		var resultsUpdated = new CustomEvent('updated');
+		var uploadRequest = new CustomEvent('uprequested');
+		var xmlReq = new XMLHttpRequest();//This must be sent from here to mantain logged session
+		
+		console.log(Date.now() + " - state_rec: Loading listeners...");
+		document.addEventListener('isNowDisabled',function(){//Once the page is in date mode
+			console.log(Date.now() + " - state_rec: Page is in date mode, getting invoices...");
+			//Page accepts both string and integer values. ParseInt is used to kill left zeros
+			document.getElementById('ctl00_MainContent_CldFecha_DdlMes').value = parseInt(stack.date_start.split("/")[1]);
+			document.getElementById('DdlAnio').value = parseInt(stack.date_start.split("/")[2]);
+			document.getElementById('ctl00_MainContent_BtnBusqueda').click();
+		});
+		
+		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
+			var facs = document.getElementsByName('BtnDescarga');
+			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
+			xmlReq.open("GET",link,true);
+			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+			console.log(Date.now() + " - state_rec: Requesting invoice: " + count);
+			xmlReq.send();
+		});
+		
+		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
+			var facs = document.getElementsByName('BtnDescarga');
+			if(facs.length != 0){//If there are invoices..
+				count = 0;
+				console.log(Date.now() + " - state_rec: Invoices have been displayed, acquiring...");
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				chrome.extension.sendMessage(jsoned);
+				document.dispatchEvent(uploadRequest);
 				return false;
-			}else{//There's session
-				build_menu();
-				return true;
+			}else{//No results -- Ask for next step in stack
+				console.log(Date.now() + " - state_rec: There are no invoices");
+				stack.current_state = 4;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_rec: Logging out. State: " + stack.current_state);
+					document.getElementById("ctl00_LnkBtnCierraSesion").click();
+				});
+				return false;
 			}
-		}
-	});
+		});
+		
+		xmlReq.onload = function(){//El servidor entregó el xml
+			console.log(Date.now() + " - state_rec: Server delivered XML file of: " + count);
+			var data = document.getElementsByClassName("BtnDescarga")[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML; var valid;
+			data[data.length-2].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
+			
+			var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
+			jsoned.data[0] = {name:"Folio",value:folio};
+			jsoned.data[1] = {name:"Validity",value:valid};
+			jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+			chrome.extension.sendMessage(jsoned,function(response){//Write to database
+				console.log(Date.now() + " - state_rec: Started database writting process...");
+				if(response.answer.indexOf('Scs') == -1){//Error writing database
+					console.warn(Date.now() + " - state_rec: Database writting failed, servers possibly offline. Prompting user to decide reload...");
+					if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+						console.log(Date.now() + " - state_rec: User selected to reload. Redirecting...");
+						window.location.href = stack.state_urls[stack.current_state];
+					}else{
+						console.log(Date.now() + " - state_rec: User decided not to reload, marking error on stack and letting go");
+						stack.error = true;
+						chrome.storage.local.set({stack:stack});
+					}
+				}else{//Everything is fine!
+					console.log(Date.now() + " - state_rec: Effectively captured invoice: " + count);
+					count += 1;
+					
+					var allfacs = document.getElementsByName('BtnDescarga');
+					var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + allfacs.length + '"}');
+					jsoned.progress = parseInt(100/allfacs.length * count);
+					chrome.extension.sendMessage(jsoned);
+					if(count == allfacs.length){//Logout
+						console.log(Date.now() + " - state_rec: All invoices have been captured");
+						stack.current_state = 4;
+						chrome.storage.local.set({stack:stack},function(){
+							console.log(Date.now() + " - state_rec: Logging out. State: " + stack.current_state);
+							document.getElementById("ctl00_LnkBtnCierraSesion").click();
+						});
+					}else{
+						document.dispatchEvent(uploadRequest);
+					}
+				}
+			});
+		};
+		xmlReq.onerror = function(){//No se pudo acceder a la factura
+			console.warn(Date.now() + " - state_rec: The invoice was not delivered from server. Reloading...");
+			//Remember to first check folios
+			window.location.href = stack.state_urls[stack.current_state];
+		};
+		
+		//The actual process------------------------------------------------------------------------------------
+		var track_changes = false;
+		var fac_number = 0;
+		var noDisp = "none";
+		setInterval(function(){
+			if(document.getElementById('ctl00_MainContent_TxtUUID').disabled != track_changes){//toggle
+				console.log(Date.now() + " - state_rec: Page set in date mode");
+				track_changes = document.getElementById('ctl00_MainContent_TxtUUID').disabled;
+				document.dispatchEvent(folioDisabled);
+			}
+			if(document.getElementsByName('BtnDescarga').length != fac_number || document.getElementById("ctl00_MainContent_PnlNoResultados").style.display != noDisp){
+				console.log(Date.now() + " - state_rec: Invoices have loaded");
+				fac_number = document.getElementsByName('BtnDescarga').length;
+				noDisp = document.getElementById("ctl00_MainContent_PnlNoResultados").style.display;
+				document.dispatchEvent(resultsUpdated);
+			}
+		},1000);
+		
+		document.getElementById('ctl00_MainContent_RdoFechas').click();//Select date mode - this triggers everything
+		
+	}else{//Sepa la chingada
+		console.warn(Date.now() + " - state_rec: Reached a weird page " + window.location.href);
+		stack.error = true; stack.current_state = 2;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_rec: Trying to keep in track: Moving to state: " + stack.current_state);
+			//Remember folios must be checked at the beggining
+			window.location.href = stack.state_urls[stack.current_state];
+		});
+		return false;
+	}	
+}
+
+String.prototype.decodeHtmlEntity = function() {
+	var res = this.replace(/&#(\d+);/g,function(match, dec){return String.fromCharCode(dec);});
+	return res.replace(/&#(\w+);/g,"");
+};
+
+function is_session_active(){
+	if(window.location.href.indexOf(login_con_url) != -1){
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = is_logged_php;
+		chrome.extension.sendMessage(jsoned,function(response){
+			if(response.answer == 'Error'){
+				alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
+				return false;
+			}else{
+				var yesno = response.answer.split("_")[1];
+				if(yesno == "0"){//There's no session -- instruct to open session
+					if(window.location.href.indexOf(login_con_url) == 0){
+						jsoned = JSON.parse('{"action":"prompt_message","title":"Inicie sesión en Facturapp","msg":"Inicie sesión en Facturapp usando el ícono en la barra de navegación."}');
+						chrome.extension.sendMessage(jsoned);
+					}
+					return false;
+				}else{//There's session
+					build_menu();
+					return true;
+				}
+			}
+		});
+	}
 }
 
 function build_menu(){

@@ -17,7 +17,7 @@
   "content_scripts":[{
   	"matches":[
   		"https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*",
-  		"https://cfdiau.sat.gob.mx/nidp/app?*",
+  		"https://cfdiau.sat.gob.mx/nidp/*",
   		"https://portalcfdi.facturaelectronica.sat.gob.mx/*"
   	],
   	"js":["/JS/contentscript.js"],
