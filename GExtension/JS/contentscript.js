@@ -8,6 +8,9 @@ const logged_2_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/Consulta.
 const emi_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaEmisor.aspx";
 const rec_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaReceptor.aspx";
 const logout_url = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
+const logout_1_pass = "https://cfdiau.sat.gob.mx/nidp/logoutWreply.jsp";
+const logout_2_pass = "https://cfdiau.sat.gob.mx/nidp/lodc.jsp"
+const loguot_token = "Para terminar";
 const iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
 //Constants
 const clientY = 55;//How much the panel must scroll per client
@@ -28,12 +31,14 @@ const get_clients_php = "http://facturapp.eu.pn/PHP/getClients.php";
 const is_logged_php = "http://facturapp.eu.pn/PHP/isLogged.php";
 const get_pass_php = "http://facturapp.eu.pn/PHP/getPassword.php";
 const add_invoice_php = "http://facturapp.eu.pn/PHP/addInvoice.php";
+const get_folios_php = "http://facturapp.eu.pn/PHP/getFolios.php";
 //Globals
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
 var acumY = 0;//The actual position of highlighted element
 var count = 0;//Invoices counter for download
+var val_changed = false;
 
 //Functions
 function refresh_clients(listeners){
@@ -598,7 +603,7 @@ function check_page(){
 					case 1: state_logged_emi(stack); break;
 					case 2: state_emi_down(stack); break;
 					case 3: state_rec_down(stack); break;
-					case 4: chrome.storage.local.remove("stack"); break;
+					case 4: state_logout(stack); break;
 					//case 4: state_logout(stack); break;
 					default: null;//Error
 				}
@@ -741,11 +746,50 @@ function state_emi_down(stack){
 		
 		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
 			var facs = document.getElementsByName('BtnDescarga');
+			var data = facs[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML;var valid;
+			data[data.length-1].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
 			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
-			xmlReq.open("GET",link,true);
-			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-			console.log(Date.now() + " - state_emi: Requesting invoice: " + count);
-			xmlReq.send();
+			
+			chrome.storage.local.get("folios",function(data){//Retrieving folios!
+				if(data["folios"] == "[]"){
+					var folios = []; var valids = [];
+				}else{
+					var dashed = data["folios"].split("/");
+					var folios = JSON.parse(dashed[0]); var valids = JSON.parse(dashed[1]);
+				}
+				if(folios.indexOf(folio) == -1){//Not registered
+					console.log(Date.now() + " - state_emi: New folio, adding...");
+					xmlReq.open("GET",link,true);
+					xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+					console.log(Date.now() + " - state_emi: Requesting invoice: " + count);
+					xmlReq.send();
+				}else if(parseInt(valids[folios.indexOf(folio)]) != valid){//Validity changed
+					val_changed = true;
+					console.warn(Date.now() + " - state_emi: Validity changed, modifying...");
+					xmlReq.open("GET",link,true);
+					xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+					console.log(Date.now() + " - state_emi: Requesting invoice: " + count);
+					xmlReq.send();
+				}else{
+					console.log(Date.now() + " - state_emi: Repeated folio. Skipping...");
+					count += 1;
+					
+					var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}');
+					jsoned.progress = parseInt(100/facs.length * count);
+					chrome.extension.sendMessage(jsoned);
+					if(count == facs.length){//Logout
+						console.log(Date.now() + " - state_emi: All invoices have been captured");
+						stack.current_state = 4;
+						chrome.storage.local.set({stack:stack},function(){
+							console.log(Date.now() + " - state_emi: Logging out. State: " + stack.current_state);
+							document.getElementById("ctl00_LnkBtnCierraSesion").click();
+						});
+					}else{
+						document.dispatchEvent(uploadRequest);
+					}
+				}
+			});
 		});
 		
 		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
@@ -755,10 +799,34 @@ function state_emi_down(stack){
 				console.log(Date.now() + " - state_emi: Invoices have been displayed, acquiring...");
 				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
 				chrome.extension.sendMessage(jsoned);
-				document.dispatchEvent(uploadRequest);
+				
+				//Getting folios!
+				jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = get_folios_php;
+				jsoned.data[0] = {name:"fechaInicial",value:stack.date_start.replace(/\//g,"-")};
+				jsoned.data[1] = {name:"fechaFinal",value:stack.date_end.replace(/\//g,"-")};
+				jsoned.data[2] = {name:"clientRFC",value:stack.rfcs[stack.current_elem]};
+				jsoned.data[3] = {name:"tipo",value:0};
+				chrome.extension.sendMessage(jsoned,function(response){
+					if(response.answer == "Error"){
+						console.warn(Date.now() + " - state_emi: Could not get Folios. Prompting user to decide reload...");
+						if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+							console.log(Date.now() + " - state_emi: User selected to reload. Redirecting...");
+							window.location.href = stack.state_urls[stack.current_state];
+						}else{
+							console.log(Date.now() + " - state_emi: User decided not to reload, marking error on stack and letting go");
+							stack.error = true;
+							chrome.storage.local.set({stack:stack});
+						}
+					}else{
+						chrome.storage.local.set({folios:response.answer},function(){
+							console.warn(Date.now() + " - state_emi: Got Folios!");
+							document.dispatchEvent(uploadRequest);
+						});
+					}
+				});
 				return false;
 			}else{//No results -- Ask for next step in stack
-				console.log(Date.now() + " - state_emi: There are no invoices");
+				console.warn(Date.now() + " - state_emi: There are no invoices");
 				stack.current_state = 3;
 				chrome.storage.local.set({stack:stack},function(){
 					console.log(Date.now() + " - state_emi: Redirecting to 'Recibidas', state: " + stack.current_state);
@@ -778,6 +846,8 @@ function state_emi_down(stack){
 			jsoned.data[0] = {name:"Folio",value:folio};
 			jsoned.data[1] = {name:"Validity",value:valid};
 			jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+			val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
+			val_changed = false;
 			chrome.extension.sendMessage(jsoned,function(response){//Write to database
 				console.log(Date.now() + " - state_emi: Started database writting process...");
 				if(response.answer.indexOf('Scs') == -1){//Error writing database
@@ -872,11 +942,50 @@ function state_rec_down(stack){
 		
 		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
 			var facs = document.getElementsByName('BtnDescarga');
+			var data = facs[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML;var valid;
+			data[data.length-2].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
 			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
-			xmlReq.open("GET",link,true);
-			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-			console.log(Date.now() + " - state_rec: Requesting invoice: " + count);
-			xmlReq.send();
+			
+			chrome.storage.local.get("folios",function(data){
+				if(data["folios"] == "[]"){
+					var folios = []; var valids = [];
+				}else{
+					var dashed = data["folios"].split("/");
+					var folios = JSON.parse(dashed[0]); var valids = JSON.parse(dashed[1]);
+				}
+				if(folios.indexOf(folio) == -1){//Not registered
+					console.log(Date.now() + " - state_rec: New folio, adding...");
+					xmlReq.open("GET",link,true);
+					xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+					console.log(Date.now() + " - state_rec: Requesting invoice: " + count);
+					xmlReq.send();
+				}else if(parseInt(valids[folios.indexOf(folio)]) != valid){//Validity changed
+					val_changed = true;
+					console.warn(Date.now() + " - state_rec: Validity changed, modifying...");
+					xmlReq.open("GET",link,true);
+					xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+					console.log(Date.now() + " - state_rec: Requesting invoice: " + count);
+					xmlReq.send();
+				}else{
+					console.log(Date.now() + " - state_rec: Repeated folio. Skipping...");
+					count += 1;
+					
+					var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}');
+					jsoned.progress = parseInt(100/facs.length * count);
+					chrome.extension.sendMessage(jsoned);
+					if(count == facs.length){//Logout
+						console.log(Date.now() + " - state_rec: All invoices have been captured");
+						stack.current_state = 4;
+						chrome.storage.local.set({stack:stack},function(){
+							console.log(Date.now() + " - state_rec: Logging out. State: " + stack.current_state);
+							document.getElementById("ctl00_LnkBtnCierraSesion").click();
+						});
+					}else{
+						document.dispatchEvent(uploadRequest);
+					}
+				}
+			});
 		});
 		
 		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
@@ -886,10 +995,34 @@ function state_rec_down(stack){
 				console.log(Date.now() + " - state_rec: Invoices have been displayed, acquiring...");
 				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
 				chrome.extension.sendMessage(jsoned);
-				document.dispatchEvent(uploadRequest);
+				
+				//Getting folios!
+				jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = get_folios_php;
+				jsoned.data[0] = {name:"fechaInicial",value:stack.date_start.replace(/\//g,"-")};
+				jsoned.data[1] = {name:"fechaFinal",value:stack.date_end.replace(/\//g,"-")};
+				jsoned.data[2] = {name:"clientRFC",value:stack.rfcs[stack.current_elem]};
+				jsoned.data[3] = {name:"tipo",value:1};
+				chrome.extension.sendMessage(jsoned,function(response){
+					if(response.answer == "Error"){
+						console.warn(Date.now() + " - state_rec: Could not get Folios. Prompting user to decide reload...");
+						if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+							console.log(Date.now() + " - state_rec: User selected to reload. Redirecting...");
+							window.location.href = stack.state_urls[stack.current_state];
+						}else{
+							console.log(Date.now() + " - state_rec: User decided not to reload, marking error on stack and letting go");
+							stack.error = true;
+							chrome.storage.local.set({stack:stack});
+						}
+					}else{
+						chrome.storage.local.set({folios:response.answer},function(){
+							console.warn(Date.now() + " - state_rec: Got Folios!");
+							document.dispatchEvent(uploadRequest);
+						});
+					}
+				});
 				return false;
 			}else{//No results -- Ask for next step in stack
-				console.log(Date.now() + " - state_rec: There are no invoices");
+				console.warn(Date.now() + " - state_rec: There are no invoices");
 				stack.current_state = 4;
 				chrome.storage.local.set({stack:stack},function(){
 					console.log(Date.now() + " - state_rec: Logging out. State: " + stack.current_state);
@@ -909,6 +1042,8 @@ function state_rec_down(stack){
 			jsoned.data[0] = {name:"Folio",value:folio};
 			jsoned.data[1] = {name:"Validity",value:valid};
 			jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+			val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
+			val_changed = false;
 			chrome.extension.sendMessage(jsoned,function(response){//Write to database
 				console.log(Date.now() + " - state_rec: Started database writting process...");
 				if(response.answer.indexOf('Scs') == -1){//Error writing database
@@ -942,6 +1077,7 @@ function state_rec_down(stack){
 				}
 			});
 		};
+		
 		xmlReq.onerror = function(){//No se pudo acceder a la factura
 			console.warn(Date.now() + " - state_rec: The invoice was not delivered from server. Reloading...");
 			//Remember to first check folios
@@ -978,6 +1114,36 @@ function state_rec_down(stack){
 		});
 		return false;
 	}	
+}
+
+function state_logout(stack){
+	if(window.location.href.indexOf(logout_url) != -1 || window.location.href.indexOf(logout_1_pass) != -1 || window.location.href.indexOf(logout_2_pass) != -1){//Reached a known logout page
+		console.log(Date.now() + " - state_logout: Reached a friendly logout page. State:" + stack.current_state);
+		if(document.body.innerText.indexOf(loguot_token) != -1){//Reached the last logout page
+			var n = stack.ids.length - 1;
+			var i = stack.current_elem;
+			if(i != n){//Not the end
+				console.log(Date.now() + " - state_logout: Updating stack element...");
+				stack.current_elem += 1; stack.current_state = 0;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_logout: Updated stack to element: " + stack.update_elem + ", and state: " + stack.current_state);
+					window.location.href = stack.state_urls[stack.current_state];
+				});
+			}else{//The end
+				console.log(Date.now() + " - state_logout: Reached the end of the stack. Redirecting to init page...");
+				chrome.storage.local.remove("stack",function(){
+					console.log(Date.now() + " - state_logout: Happily ended!");
+					window.location.href = login_con_url;
+				});
+			}
+		}else{
+			console.log(Date.now() + " - state_logout: SAT page is redirecting...");
+			null; //Let stupid sat to redirect
+		}
+	}else{
+		console.warn(Date.now() + " - state_logout: Reached a werid page: " + window.location.href);
+		chrome.storage.local.remove("stack");
+	}
 }
 
 String.prototype.decodeHtmlEntity = function() {
