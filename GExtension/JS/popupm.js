@@ -44,7 +44,7 @@ function call_page(login_code){
 function getInTouch(){//Send the form without using submit traditional way
 	call_wait();
 	
-	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"http://facturapp.eu.pn/PHP/login.php","data":[{"name":"Username","value":""},{"name":"Password","value":""}]}');
+	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"http://uberprototech.com/facturapp/PHP/login.php","data":[{"name":"Username","value":""},{"name":"Password","value":""}]}');
 	var usname = document.getElementsByName("Username")[0].value;
 	var uspass = document.getElementsByName("Password")[0].value;
 	
@@ -161,7 +161,7 @@ function login_error_handling(usname, uspass, login_code){
 }
 
 function is_session_active(login_code){
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://uberprototech.com/facturapp/PHP/isLogged.php","data":[]}');
 	chrome.extension.sendMessage(jsoned,function(response){
 		if(response.answer == 'Error'){
 			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
@@ -205,7 +205,7 @@ function is_session_active(login_code){
   						focus_sat_page();
   					});
   					document.getElementById("fapp_ext_gotohell").addEventListener('click', function(){
-  						var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/logout.php","data":[]}');
+  						var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://uberprototech.com/facturapp/PHP/logout.php","data":[]}');
 						chrome.extension.sendMessage(jsoned,function(response){
 							if(response.answer == 'Error'){
 								alert("La sesión no pudo finalizar. Cierre el explorador para salir de la sesión manualmente.");
@@ -228,6 +228,6 @@ function is_session_active(login_code){
 }
 
 //Event Listeners
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function(){
 	call_page(0);
 });

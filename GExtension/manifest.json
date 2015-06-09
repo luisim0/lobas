@@ -15,7 +15,11 @@
   	"128": "/Icons/icon128.png"
   },
   "content_scripts":[{
-  	"matches":["https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*"],
+  	"matches":[
+  		"https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*",
+  		"https://cfdiau.sat.gob.mx/nidp/*",
+  		"https://portalcfdi.facturaelectronica.sat.gob.mx/*"
+  	],
   	"js":["/JS/contentscript.js"],
   	"css":["/CSS/menu_style.css"],
   	"run_at":"document_end"
@@ -34,6 +38,6 @@
   	"notifications",
     "tabs",
     "https://ajax.googleapis.com/",
-    "http://facturapp.eu.pn/pruebas.php"
+    "http://uberprototech.com/facturapp/"
   ]
 }

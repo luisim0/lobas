@@ -1,99 +1,53 @@
 //SAT URLs
+const login_con_url = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
+const login_fiel_url = "SATx509Custom";//Token
+const login_con_token = "SATUPCFDiCon";//Token
+const login_1_pass = "https://cfdiau.sat.gob.mx/nidp/app/login?";
+const login_2_pass = "https://cfdiau.sat.gob.mx/nidp/wsfed_redir_cont_portalcfdi.jsp?";
+const logged_1_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
+const logged_2_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/Consulta.aspx";
+const emi_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaEmisor.aspx";
+const rec_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/ConsultaReceptor.aspx";
+const logout_url = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
+const logout_1_pass = "https://cfdiau.sat.gob.mx/nidp/logoutWreply.jsp";
+const logout_2_pass = "https://cfdiau.sat.gob.mx/nidp/lodc.jsp";
+const loguot_token = "Para terminar";
 const iqaccess_url = "https://cfdiau.sat.gob.mx/nidp/app?";
-const weird_sat_login = "https://cfdiau.sat.gob.mx/nidp/lofc.jsp";//Cuando termina la sesión
-const valid_sat_login = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
-const logged_sat_url = "https://portalcfdi.facturaelectronica.sat.gob.mx/";
-const valid_sat_token = "https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon";
-
-//Globals
+//Constants
+const clientY = 55;//How much the panel must scroll per client
 const hide_unnactive_URL = chrome.extension.getURL("IMGs/hide_unnactive.png");
-const sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
-const client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
-const popup_box = chrome.extension.getURL("/SrcHTML/client_input.html");
 const hide_active_URL = chrome.extension.getURL("IMGs/hide_active.png");
 const status_ready = chrome.extension.getURL("IMGs/ready.png");
 const status_loading = chrome.extension.getURL("IMGs/loading.gif");
 const status_wrong = chrome.extension.getURL("IMGs/wrong.png");
 const fapp_logo = chrome.extension.getURL("IMGs/facturapp_logo_ver.png");
 const office_generic = chrome.extension.getURL("IMGs/edificio.png");
-const add_client_php = "http://facturapp.eu.pn/PHP/addClient.php";
-const edit_client_php = "http://facturapp.eu.pn/PHP/editClient.php";
-const del_clients_php = "http://facturapp.eu.pn/PHP/deleteClient.php";
+const sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
+const client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
+const popup_box = chrome.extension.getURL("/SrcHTML/client_input.html");
+const add_client_php = "http://uberprototech.com/facturapp/PHP/addClient.php";
+const edit_client_php = "http://uberprototech.com/facturapp/PHP/editClient.php";
+const del_clients_php = "http://uberprototech.com/facturapp/PHP/deleteClient.php";
+const get_clients_php = "http://uberprototech.com/facturapp/PHP/getClients.php";
+const is_logged_php = "http://uberprototech.com/facturapp/PHP/isLogged.php";
+const get_pass_php = "http://uberprototech.com/facturapp/PHP/getPassword.php";
+const add_invoice_php = "http://uberprototech.com/facturapp/PHP/addInvoice.php";
+const get_folios_php = "http://uberprototech.com/facturapp/PHP/getFolios.php";
+//Globals
 var json_arr;
 var prev_search = "";
 var sel_index = 0;
-const clientY = 55;//How much the panel must scroll per client
 var acumY = 0;//The actual position of highlighted element
-var prev_e;//To prevent double event firing
-
-var sync = {get_clients:false, get_template:false};
+var count = 0;//Invoices counter for download
+var val_changed = false;
+//Event listeners
+var uploadRequest = new CustomEvent('uprequested');
 
 //Functions
-function check_page(){
-	if(window.location.href.indexOf(iqaccess_url) == 0){
-		//We reached the netiq access manager... :(
-		window.location.replace(logged_sat_url);
-		return false;
-	}else if(window.location.href.indexOf(weird_sat_login) == 0){
-		//Ended session
-		window.location.replace(valid_sat_login);
-		return false;
-	}else{
-		//Normal entrance
-		is_session_active();
-		return true;
-	}
-}
-
-function is_session_active(){
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/isLogged.php","data":[]}');
-	chrome.extension.sendMessage(jsoned,function(response){
-		if(response.answer == 'Error'){
-			alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
-			return false;
-		}else{
-			var yesno = response.answer.split("_")[1];
-			if(yesno == "0"){//There's no session
-				//instruct to open session
-				if(window.location.href.indexOf(valid_sat_token) == 0){
-					jsoned = JSON.parse('{"action":"prompt_message"}');
-					chrome.extension.sendMessage(jsoned);
-				}
-				return false;
-			}else{//There's session
-				build_menu();
-				return true;
-			}
-		}
-	});
-}
-
-function build_menu(){
-	var get_side_bar = new XMLHttpRequest();
-	get_side_bar.open("GET", sidebar_URL, true);
-	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-	get_side_bar.onload = function(argument){
-		//Insert structure
-		document.body.innerHTML += get_side_bar.responseText.replace(/[\r\n\t]/g, "");
-		
-		//Save RFC options
-		chrome.storage.sync.get("RFC",function(data){
-			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
-		});
-		
-		//Place/edit images
-		document.getElementById("fapp_logo").src = fapp_logo;
-		
-		//Insert Clients
-		refresh_clients(true);
-	};
-	get_side_bar.send();
-}
-
 function refresh_clients(listeners){
 	var status_image = document.getElementById("fapp_status");
 	status_image.src = status_loading;
-	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"http://facturapp.eu.pn/PHP/getClients.php","data":[]}');
+	var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = get_clients_php;
 	chrome.extension.sendMessage(jsoned,function(response){//Obtenemos clientes
 		if(response.answer == 'Error'){
 			status_image.src = status_wrong;
@@ -162,7 +116,7 @@ function add_listeners(){
 		document.getElementById("fapp_cat_1").click();
 	});
 	
-	//Category selectors - I think this must be restated!!
+	//Category selectors
 	var cat_links = document.getElementsByClassName("fapp_category_container");
 	var n = cat_links.length;
 	for(i = 0; i < n; i++){
@@ -182,7 +136,12 @@ function add_listeners(){
 					cat_links[j].firstChild.style.cursor = "pointer";
 				}else{
 					(has_menu.indexOf(j) > -1) ? cat_links[j].nextSibling.className = "fapp_menu_active" : null;
-					(has_menu.indexOf(j) > -1) ? del[j].className = "fapp_data_container_wmenu" : del[j].className = "fapp_data_container_populated";
+					if(has_menu.indexOf(j) > -1){
+						del[j].className = "fapp_data_container_wmenu";
+						document.getElementById("fapp_search_input_field").focus();
+					}else{
+						del[j].className = "fapp_data_container_populated";
+					}
 					cat_links[j].firstChild.style.color = "#16495C";
 					cat_links[j].firstChild.style.cursor = "default";
 				}
@@ -227,7 +186,7 @@ function add_listeners(){
 				}
 			}
 		}
-		
+		sel_index = 0; acumY = 0;
 	});
 	
 	//Search bar tracking changes
@@ -245,7 +204,8 @@ function add_listeners(){
 			case 13: //Enter
 				var res = get_search_results();
 				var selected = res.selected;var n = res.n;var class_parts = res.class_parts;
-				if(class_parts[1] == "fapp_client_normal"){
+				if(class_parts[1] == "fapp_client_normal"){//If not highlighted
+					sel_index = 0; acumY = 0;
 					selected[sel_index].className = class_parts[0] + " fapp_client_highlighted";
 				}else{//If already highlighted
 					(class_parts[0] == "fapp_client_box") ? selected[sel_index].className = "fapp_client_selected " + class_parts[1] : selected[sel_index].className = "fapp_client_box " + class_parts[1];
@@ -320,6 +280,7 @@ function add_listeners(){
 	
 	//Add client input handlers
 	document.getElementsByClassName("fapp_input_cross")[0].addEventListener('click',function(){
+		document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
 		hide_popup();
 	});
 	document.getElementById("fapp_input_name").addEventListener('keypress',function(){
@@ -338,45 +299,84 @@ function add_listeners(){
 		var repass = document.getElementById("fapp_input_repass");
 		repass.style.backgroundColor = "rgba(255,255,255,0.2)";
 	});
-	document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',function(){
-		var name = document.getElementById("fapp_input_name");
-		var rfc = document.getElementById("fapp_input_rfc");
-		var pass = document.getElementById("fapp_input_pass");
-		var repass = document.getElementById("fapp_input_repass");
-		
-		var client = set_selected_num().items[0];
-		var addedit = document.getElementsByClassName("fapp_input_main_visible")[0].id;
-		
-		trim_whites(name, true);
-		trim_whites(rfc, false);
-					
-		if(name.value != ""){
-			if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
-				if(pass.value == repass.value){
-					if(addedit == 'add' && pass.value != ""){
+	
+	//fapp_input_check - 'click' event is placed on throw-popup
+	
+	//Client input, password reveal
+	document.getElementById("fapp_passcover").addEventListener('click',function(){
+		document.getElementById("fapp_passcover").style.display = "none";
+	});
+	document.getElementById("fapp_input_pass").addEventListener('focus',function(){
+		document.getElementById("fapp_passcover").style.display = "none";
+	});
+	
+	//DOWNLOAD!
+	document.getElementById("test").addEventListener('click',download_process);
+}
+
+function client_input_check(){
+	var name = document.getElementById("fapp_input_name");
+	var rfc = document.getElementById("fapp_input_rfc");
+	var pass = document.getElementById("fapp_input_pass");
+	var repass = document.getElementById("fapp_input_repass");
+	
+	var client = set_selected_num().items[0];
+	var addedit = document.getElementsByClassName("fapp_input_main_visible")[0].id;
+	
+	trim_whites(name, true);
+	trim_whites(rfc, false);
+	rfc.value = rfc.value.toUpperCase();
+				
+	if(name.value != ""){
+		if(rfc.value != "" && (rfc.value.length == 12 || rfc.value.length == 13)){
+			if(pass.value == repass.value){
+				if(addedit == 'add' && pass.value != ""){
+					var duplicated = client_exists(name.value, rfc.value, null);
+					if(!duplicated){
+						document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
 						query_client_change(addedit, client);
-					}else if(addedit == 'edit'){
-						query_client_change(addedit, client);
+						return true;
 					}else{
-						pass.style.backgroundColor = "rgba(255,166,155,0.5)";
+						alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
+					}
+				}else if(addedit == 'edit'){
+					var duplicated = client_exists(name.value, rfc.value, client.id);
+					if(!duplicated){
+						document.getElementsByClassName("fapp_input_check")[0].removeEventListener('click', client_input_check);
+						query_client_change(addedit, client);
+						return true;
+					}else{
+						alert('El campo: "' + duplicated + '" ya existe en su lista de clientes');
 					}
 				}else{
-					repass.style.backgroundColor = "rgba(255,166,155,0.5)";
+					pass.style.backgroundColor = "rgba(255,166,155,0.5)";
 				}
 			}else{
-				rfc.style.backgroundColor = "rgba(255,166,155,0.5)";
+				repass.style.backgroundColor = "rgba(255,166,155,0.5)";
 			}
 		}else{
-			name.style.backgroundColor = "rgba(255,166,155,0.5)";
+			rfc.style.backgroundColor = "rgba(255,166,155,0.5)";
 		}
-	});
+	}else{
+		name.style.backgroundColor = "rgba(255,166,155,0.5)";
+	}
+	return false;
+}
+
+function client_exists(name, rfc, omitID){
+	for(i = 0;i < json_arr.length;i++){
+		if(omitID == json_arr[i].id) continue;
+		if(name == json_arr[i].name) return name;
+		if(rfc == json_arr[i].rfc) return rfc;
+	}
+	return false;
 }
 
 function trim_whites(inputElement, extra){
 	if(extra){
 		inputElement.value = inputElement.value.replace(/\s\s+/g," ");
-		while(inputElement.value[0] == " "){inputElement.value = inputElement.value.replaceAt(0,"")};
-		while(inputElement.value[inputElement.value.length - 1] == " "){inputElement.value = inputElement.value.replaceAt(inputElement.value.length - 1,"")};
+		while(inputElement.value[0] == " "){inputElement.value = inputElement.value.replaceAt(0,"");};
+		while(inputElement.value[inputElement.value.length - 1] == " "){inputElement.value = inputElement.value.replaceAt(inputElement.value.length - 1,"");};
 	}else{
 		inputElement.value = inputElement.value.replace(/ /g,"");
 	}
@@ -412,7 +412,7 @@ String.prototype.replaceAt = function(index, character){
 	}else{
 		return this.substr(0,index) + character + this.substr(index+1);
 	}	
-}
+};
 
 function set_selected_num(){
 	var items = document.getElementsByClassName("fapp_client_selected"); 
@@ -463,9 +463,11 @@ function throw_popup(addedit, client){
 	if(addedit == 'edit'){
 		name.value = client.getElementsByClassName("fapp_client_name_holder")[0].innerHTML;
 		rfc.value = client.getElementsByClassName("fapp_client_RFC")[0].innerHTML;
+		document.getElementById("fapp_passcover").style.display = "block";
 	}else{
 		name.value = "";
 		rfc.value = "";
+		document.getElementById("fapp_passcover").style.display = "none";
 	}
 	pass.value = "";
 	repass.value = "";
@@ -482,6 +484,9 @@ function throw_popup(addedit, client){
 	
 	//Identify it
 	document.getElementsByClassName("fapp_input_main_visible")[0].id = addedit;
+	
+	//Special non-bouncing listeners:
+	document.getElementsByClassName("fapp_input_check")[0].addEventListener('click',client_input_check);
 }
 
 function hide_popup(){
@@ -533,5 +538,498 @@ function query_client_change(option, client){
 	return false;
 }
 
-//Main! - It goes check_page() >> is_session_active() >> build_menu()
+function create_stack(){
+	return {
+			current_elem: 0,
+			current_state: 0,
+			download_active: false,
+			ids: [],
+			rfcs: [],
+			state_urls:[
+				login_con_url,
+				logged_1_url,
+				emi_url,
+				rec_url
+			],
+			error: false,
+			finished: false,
+			date_start: "01/03/2015",
+			date_end: "31/03/2015",
+			month: "3"
+			};
+}
+
+function gen_stack(){
+	var selected = document.getElementsByClassName("fapp_client_selected");
+	if(selected.length != 0){
+		var stack = create_stack();
+		for(i = 0;i < selected.length;i++){
+			stack.ids.push(parseInt(selected[i].id));
+			stack.rfcs.push(selected[i].getElementsByClassName("fapp_client_RFC")[0].innerHTML);
+		}
+		stack.current_elem = 0;
+		stack.download_active = true;
+		return stack;
+	}else{
+		alert("Seleccione al menos un cliente para iniciar la descarga");
+		return false;
+	}
+}
+
+function download_process(){
+	var stack = gen_stack();
+	if(stack){//Success creating stack
+		chrome.storage.local.set({stack:stack},function(){
+			window.location.href = login_con_url;
+		});
+		//var jsoned = JSON.parse('{"action":"prompt_message","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan"}');
+		//chrome.extension.sendMessage(jsoned);
+		//jsoned = JSON.parse('{"action":"show_progress","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan","progress":30}');
+		//chrome.extension.sendMessage(jsoned);
+	}
+	//If successfull: document.getElementById("test").removeEventListener('click',download_process);
+}
+
+function check_page(){
+	chrome.storage.local.get("stack",function(data){
+		if(data["stack"]){//stack exists - it may be new or an error stack
+			var stack = data["stack"];
+			if(stack.download_active && !stack.error){
+				console.log(Date.now() + " - Stack detected, current state: " + stack.current_state);
+				switch(stack.current_state){//Save stack process must be included inside each function
+					case 0: state_login(stack); break;
+					/*case 1: state_logged_emi(stack); break;*/
+					case 2: state_emi_down(stack); break;
+					case 3: state_rec_down(stack); break;
+					case 4: state_logout(stack); break;
+					//case 4: state_logout(stack); break;
+					default: null;//Error
+				}
+			}else if(stack.download_active){//Error stack - this should depart from login page exclusively!!
+				console.log(Date.now() + " - The stack file reported an error");
+				if(confirm('Ocurrió un error pero existe un proceso de descarga no completado. ¿Desea continuar ahora?')){
+					stack.error = false;
+					console.log(Date.now() + " - User wanted to continue process, page will reload");
+					chrome.storage.local.set({stack:stack},function(){//try to reach page again
+						window.location.href = stack.state_urls[stack.current_state];
+					});
+				}else{
+					console.log(Date.now() + " - User does not want to continue, stack removed");
+					chrome.storage.local.remove("stack");
+					is_session_active();
+				}
+			}else{//Normal Entrace
+				console.warn(Date.now() + " - Something weird happened with stack and it's been eliminated");
+				chrome.storage.local.remove("stack");
+				is_session_active();
+			}
+		}else{//Normal Entrace - no stack
+			console.log(Date.now() + " - No stack detected, checking for session active");
+			window.location.href.indexOf(login_con_url) != -1 ? is_session_active() : null;
+		}
+	});
+}
+
+function state_login(stack){
+	if(window.location.href.indexOf(login_con_url) != -1){//Todo en orden
+		console.log(Date.now() + " - state_login: Reached login page");
+		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
+		jsoned.url = get_pass_php;
+		jsoned.data[0] = {name:"ClientID",value:stack.ids[stack.current_elem]};
+		chrome.extension.sendMessage(jsoned,function(response){//Ask for password
+			if(response.answer == 'Error' || response.answer.indexOf('<br>') != -1){
+				console.warn(Date.now() + " - state_login: Asked for user password, retrieved error");
+				stack.error = true;
+				chrome.storage.local.set({stack:stack});
+				window.location.href = stack.state_urls[stack.current_state];
+			}else{
+				console.log(Date.now() + " - state_login: Pasting user data values");
+				if(document.getElementsByName('Ecom_User_ID')){//This prevents the system to throw error if page is redirected by SAT
+					document.getElementsByName('Ecom_User_ID')[0].value = stack.rfcs[stack.current_elem];
+					document.getElementsByName('Ecom_Password')[0].value = response.answer;
+					stack.current_state = 2;//I'm skipping one page...
+					chrome.storage.local.set({stack:stack},function(){
+						document.getElementById('submit').click();
+					});
+				}
+			}
+		});
+		return true;
+	}else if(window.location.href.indexOf(login_fiel_url) != -1){//Cambiar a acceso por contraseña
+		console.warn(Date.now() + " - state_login: Wrong URL, reached FIEL page. Redirecting...");
+		window.location.href = stack.state_urls[stack.current_state];
+		return true;	
+	}else{//Error
+		console.warn(Date.now() + " - state_login: Reached weird page: " + window.location.href);
+		stack.error = true;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_login: Moving to login page");
+			window.location.href = stack.state_urls[stack.current_state];
+		});
+		return true;
+	}
+}
+
+function request_invoice(facs,folio,valid,link,stack){
+	var xmlReq = new XMLHttpRequest();
+	
+	chrome.storage.local.get("folios",function(data){//Retrieving folios!
+		if(data["folios"] == "[]"){
+			var folios = []; var valids = [];
+		}else{
+			var dashed = data["folios"].split("/");
+			var folios = JSON.parse(dashed[0]); var valids = JSON.parse(dashed[1]);
+		}
+		if(folios.indexOf(folio) == -1){//Not registered - so this is a new invoice
+			val_changed = false;
+			xmlReq.open("GET",link,true);
+			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+			xmlReq.send();
+		}else if(parseInt(valids[folios.indexOf(folio)]) != valid){//Validity changed
+			val_changed = true;
+			xmlReq.open("GET",link,true);
+			xmlReq.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+			xmlReq.send();
+		}else{//Existent invoice, unchanged. Skip to next
+			console.log("%c" + Date.now() + " - state_req: Repeated folio. Skipping: " + count, "color: orange");
+			moveNextState(stack);
+		}
+	});
+	
+	xmlReq.onload = function(){//El servidor entregó el xml
+		console.log(Date.now() + " - state_req: Server delivered XML file of: " + count);
+		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
+		jsoned.data[0] = {name:"Folio",value:folio};
+		jsoned.data[1] = {name:"Validity",value:valid};
+		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+		val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
+		val_changed = false;
+		chrome.extension.sendMessage(jsoned,function(response){//Write to database
+			if(response.answer.indexOf('Scs') == -1){//Error writing database
+				console.warn(Date.now() + " - state_req: Database writting failed, servers possibly offline. Prompting user to decide reload...");
+				if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+					console.log(Date.now() + " - state_req: User selected to reload. Moving to state: " + stack.current_state);
+					window.location.href = stack.state_urls[stack.current_state];
+				}else{
+					console.log(Date.now() + " - state_req: User decided not to reload, marking error on stack and letting go");
+					stack.error = true;
+					chrome.storage.local.set({stack:stack});
+				}
+			}else{//Dispatch to next state if all invoices have been captured
+				jsoned.data[3].value == 1 ? console.log("%c" + Date.now() + " - state_req: Effectively changed invoice: " + count, "color:purple") : console.log("%c" + Date.now() + " - state_req: Effectively captured invoice: " + count, "color:blue");
+				moveNextState(stack);
+			}
+		});
+	};
+	xmlReq.onerror = function(){//No se pudo acceder a la factura
+	console.warn(Date.now() + " - state_req: The invoice was not delivered from server. Reloading...");
+		window.location.href = stack.state_urls[stack.current_state];
+	};
+}
+
+function moveNextState(stack){
+	count += 1;
+	var allfacs = document.getElementsByName('BtnDescarga');
+	var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + allfacs.length + '"}');
+	jsoned.progress = parseInt(100/allfacs.length * count);
+	chrome.extension.sendMessage(jsoned);
+	if(count == allfacs.length){
+		console.log("%c" + Date.now() + " - state_req: All invoices have been captured","color:green");
+		stack.current_state += 1;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_req: process ended!");
+			//Decide if logout or navigate
+			stack.current_state == 4 ? document.getElementById("ctl00_LnkBtnCierraSesion").click() : window.location.href = stack.state_urls[stack.current_state];
+		});
+	}else{
+		document.dispatchEvent(uploadRequest);
+	}
+}
+
+function getFolios(stack){
+	var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = get_folios_php;
+	jsoned.data[0] = {name:"fechaInicial",value:stack.date_start.replace(/\//g,"-")};
+	jsoned.data[1] = {name:"fechaFinal",value:stack.date_end.replace(/\//g,"-")};
+	jsoned.data[2] = {name:"clientRFC",value:stack.rfcs[stack.current_elem]};
+	//Distinguishing emited = 0 recieved = 1
+	stack.current_state == 2 ? jsoned.data[3] = {name:"tipo",value:0} : jsoned.data[3] = {name:"tipo",value:1};
+	 
+	chrome.extension.sendMessage(jsoned,function(response){
+		if(response.answer == "Error"){
+			console.warn(Date.now() + " - state_emi: Could not get Folios. Prompting user to decide reload...");
+			if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+				console.log(Date.now() + " - state_emi: User selected to reload. Redirecting...");
+				window.location.href = stack.state_urls[stack.current_state];
+			}else{
+				console.log(Date.now() + " - state_emi: User decided not to reload, marking error on stack and letting go");
+				stack.error = true;
+				chrome.storage.local.set({stack:stack});
+			}
+		}else{
+			chrome.storage.local.set({folios:response.answer},function(){
+				document.dispatchEvent(uploadRequest);
+			});
+		}
+	});
+}
+
+function state_emi_down(stack){
+	if(window.location.href.indexOf(emi_url) != -1){//Todo bien!
+		console.log(Date.now() + " - state_emi: Reached the right page");
+		var folioDisabled = new CustomEvent('isNowDisabled');
+		var resultsUpdated = new CustomEvent('updated');
+		
+		console.log(Date.now() + " - state_emi: Loading listeners...");
+		document.addEventListener('isNowDisabled',function(){//Once the page is in date mode
+			console.log(Date.now() + " - state_emi: Page is in date mode, getting invoices...");
+			document.getElementById('ctl00_MainContent_CldFechaInicial2_Calendario_text').value = stack.date_start;
+			document.getElementById('ctl00_MainContent_CldFechaFinal2_Calendario_text').value = stack.date_end;
+			document.getElementsByClassName('sbSelector')[3].innerHTML = '23';
+			document.getElementsByClassName('sbSelector')[4].innerHTML = '59';
+			document.getElementsByClassName('sbSelector')[5].innerHTML = '59';
+			document.getElementById('ctl00_MainContent_BtnBusqueda').click();
+		});
+		
+		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
+			var facs = document.getElementsByName('BtnDescarga');
+			var data = facs[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML;var valid;
+			data[data.length-1].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
+			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
+			
+			request_invoice(facs,folio,valid,link,stack);
+		});
+		
+		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
+			var facs = document.getElementsByName('BtnDescarga');
+			if(facs.length != 0){//If there are invoices..
+				count = 0;
+				console.log(Date.now() + " - state_emi: Invoices have been displayed, acquiring...");
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				chrome.extension.sendMessage(jsoned);
+				getFolios(stack);
+				return false;
+			}else{//No results -- Ask for next step in stack
+				console.warn(Date.now() + " - state_emi: There are no invoices");
+				stack.current_state = 3;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_emi: Redirecting to 'Recibidas', state: " + stack.current_state);
+					window.location.href = stack.state_urls[stack.current_state];
+				});
+				return false;
+			}
+		});
+		
+		//The actual process------------------------------------------------------------------------------------
+		var track_changes = false;
+		var fac_number = 0;
+		var noDisp = "none";
+		setInterval(function(){
+			if(document.getElementById('ctl00_MainContent_TxtUUID').disabled != track_changes){//toggle
+				track_changes = document.getElementById('ctl00_MainContent_TxtUUID').disabled;
+				document.dispatchEvent(folioDisabled);
+			}
+			if(document.getElementsByName('BtnDescarga').length != fac_number || document.getElementById("ctl00_MainContent_PnlNoResultados").style.display != noDisp){
+				fac_number = document.getElementsByName('BtnDescarga').length;
+				noDisp = document.getElementById("ctl00_MainContent_PnlNoResultados").style.display;
+				document.dispatchEvent(resultsUpdated);
+			}
+		},1000);
+		
+		document.getElementById('ctl00_MainContent_RdoFechas').click();//Select date mode - this triggers everything
+		
+	}else if(window.location.href.indexOf(iqaccess_url) != -1){//Reached iq access manager
+		console.warn(Date.now() + " - state_emi: Reached the iqaccess page. Redirecting...");
+		window.location.href = emi_url;
+	}else if(window.location.href.indexOf(login_1_pass) != -1 && document.getElementById("msgError")){
+		console.warn(Date.now() + " - state_emi: Wrong password. Prompting user to skip...");
+		if(confirm("El password no parece funcionar ¿Desea saltar al siguiente usuario?")){
+			if(stack.current_elem + 1 == stack.ids.length){//No more users to track
+				chrome.storage.local.remove("stack");
+				console.log("%c" + Date.now() + " - state_emi: User skipped and process finished","color:red");
+				alert("No hay más usuarios en la lista");
+				window.location.href = login_con_url;
+			}else{
+				stack.current_elem += 1;stack.current_state = 0;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log("%c" + Date.now() + " - state_emi: User skipped but process continues...","color:red");
+					window.location.href = login_con_url;
+				});
+			}
+		}else{
+			console.log("%c" + Date.now() + " - state_emi: User killed the process","color:red");
+			chrome.storage.local.remove("stack");
+			window.location.href = login_con_url;
+		}
+	}else if(window.location.href.indexOf(login_1_pass) != -1 || window.location.href.indexOf(login_2_pass) != -1){
+		console.warn(Date.now() + " - state_emi: Reached a known unharmful page. SAT site is redirecting...");
+		null;//Wait for it to reload... stupid SAT!
+	}else{//Sepa la chingada
+		console.warn(Date.now() + " - state_emi: Reached a weird page " + window.location.href);
+		stack.error = true; stack.current_state = 2;
+		chrome.storage.local.set({stack:stack},function(){
+			window.location.href = stack.state_urls[stack.current_state];
+		});
+		return false;
+	}
+}
+
+function state_rec_down(stack){
+	if(window.location.href.indexOf(rec_url) != -1){//Todo bien!
+		console.log(Date.now() + " - state_rec: Reached the right page");
+		var folioDisabled = new CustomEvent('isNowDisabled');
+		var resultsUpdated = new CustomEvent('updated');
+		var uploadRequest = new CustomEvent('uprequested');
+		
+		console.log(Date.now() + " - state_rec: Loading listeners, waiting for SAT page");
+		document.addEventListener('isNowDisabled',function(){//Once the page is in date mode
+			console.log(Date.now() + " - state_rec: Page is in date mode, getting invoices...");
+			//Page accepts both string and integer values. ParseInt is used to kill left zeros
+			document.getElementById('ctl00_MainContent_CldFecha_DdlMes').value = parseInt(stack.date_start.split("/")[1]);
+			document.getElementById('DdlAnio').value = parseInt(stack.date_start.split("/")[2]);
+			document.getElementById('ctl00_MainContent_BtnBusqueda').click();
+		});
+		
+		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
+			var facs = document.getElementsByName('BtnDescarga');
+			var data = facs[count].parentNode.parentNode.parentNode.children;
+			var folio = data[1].children[0].innerHTML;var valid;
+			data[data.length-2].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
+			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
+			
+			request_invoice(facs,folio,valid,link,stack);
+		});
+		
+		document.addEventListener('updated',function(){//Actions to perform once invoices are shown
+			var facs = document.getElementsByName('BtnDescarga');
+			if(facs.length != 0){//If there are invoices..
+				count = 0;
+				console.log(Date.now() + " - state_rec: Invoices have been displayed, acquiring...");
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				chrome.extension.sendMessage(jsoned);
+				getFolios(stack);
+				return false;
+			}else{//No results -- Ask for next step in stack
+				console.warn(Date.now() + " - state_rec: There are no invoices");
+				stack.current_state = 4;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_rec: Logging out. State: " + stack.current_state);
+					document.getElementById("ctl00_LnkBtnCierraSesion").click();
+				});
+				return false;
+			}
+		});
+		
+		//The actual process------------------------------------------------------------------------------------
+		var track_changes = false;
+		var fac_number = 0;
+		var noDisp = "none";
+		setInterval(function(){
+			if(document.getElementById('ctl00_MainContent_TxtUUID').disabled != track_changes){//toggle
+				track_changes = document.getElementById('ctl00_MainContent_TxtUUID').disabled;
+				document.dispatchEvent(folioDisabled);
+			}
+			if(document.getElementsByName('BtnDescarga').length != fac_number || document.getElementById("ctl00_MainContent_PnlNoResultados").style.display != noDisp){
+				fac_number = document.getElementsByName('BtnDescarga').length;
+				noDisp = document.getElementById("ctl00_MainContent_PnlNoResultados").style.display;
+				document.dispatchEvent(resultsUpdated);
+			}
+		},1000);
+		
+		document.getElementById('ctl00_MainContent_RdoFechas').click();//Select date mode - this triggers everything
+		
+	}else{//Sepa la chingada
+		console.warn(Date.now() + " - state_rec: Reached a weird page " + window.location.href);
+		stack.error = true; stack.current_state = 2;
+		chrome.storage.local.set({stack:stack},function(){
+			console.log(Date.now() + " - state_rec: Trying to keep in track: Moving to state: " + stack.current_state);
+			//Remember folios must be checked at the beggining
+			window.location.href = stack.state_urls[stack.current_state];
+		});
+		return false;
+	}	
+}
+
+function state_logout(stack){
+	if(window.location.href.indexOf(logout_url) != -1 || window.location.href.indexOf(logout_1_pass) != -1 || window.location.href.indexOf(logout_2_pass) != -1){//Reached a known logout page
+		console.log(Date.now() + " - state_logout: Reached a friendly logout page.");
+		if(document.body.innerText.indexOf(loguot_token) != -1){//Reached the last logout page
+			var n = stack.ids.length - 1;
+			var i = stack.current_elem;
+			if(i != n){//Not the end
+				console.log(Date.now() + " - state_logout: Updating stack element...");
+				stack.current_elem += 1; stack.current_state = 0;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log(Date.now() + " - state_logout: Updated stack to element: " + stack.update_elem + ", and state: " + stack.current_state);
+					window.location.href = stack.state_urls[stack.current_state];
+				});
+			}else{//The end
+				console.log(Date.now() + " - state_logout: Reached the end of the stack. Redirecting to init page...");
+				chrome.storage.local.remove("stack",function(){
+					console.log("%c" + Date.now() + " - state_logout: Happily ended!","color:green");
+					window.location.href = login_con_url;
+				});
+			}
+		}else{
+			console.log(Date.now() + " - state_logout: SAT page is redirecting...");
+			null; //Let stupid sat to redirect
+		}
+	}else{
+		console.warn(Date.now() + " - state_logout: Reached a werid page: " + window.location.href);
+		chrome.storage.local.remove("stack");
+	}
+}
+
+String.prototype.decodeHtmlEntity = function() {
+	var res = this.replace(/&#(\d+);/g,function(match, dec){return String.fromCharCode(dec);});
+	return res.replace(/&#(\w+);/g,"");
+};
+
+function is_session_active(){
+	if(window.location.href.indexOf(login_con_url) != -1){
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}'); jsoned.url = is_logged_php;
+		chrome.extension.sendMessage(jsoned,function(response){
+			if(response.answer == 'Error'){
+				alert("Los servidores de Facturapp están temporalmente fuera de servicio. Por favor intente más tarde.");
+				return false;
+			}else{
+				var yesno = response.answer.split("_")[1];
+				if(yesno == "0"){//There's no session -- instruct to open session
+					if(window.location.href.indexOf(login_con_url) == 0){
+						jsoned = JSON.parse('{"action":"prompt_message","title":"Inicie sesión en Facturapp","msg":"Inicie sesión en Facturapp usando el ícono en la barra de navegación."}');
+						chrome.extension.sendMessage(jsoned);
+					}
+					return false;
+				}else{//There's session
+					build_menu();
+					return true;
+				}
+			}
+		});
+	}
+}
+
+function build_menu(){
+	var get_side_bar = new XMLHttpRequest();
+	get_side_bar.open("GET", sidebar_URL, true);
+	get_side_bar.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	get_side_bar.onload = function(argument){
+		//Insert structure
+		document.body.innerHTML += get_side_bar.responseText.replace(/[\r\n\t]/g, "");
+		
+		//Save RFC options
+		chrome.storage.sync.get("RFC",function(data){
+			document.getElementsByClassName("fapp_office_RFC")[0].innerHTML = data["RFC"];
+		});
+		
+		//Place/edit images
+		document.getElementById("fapp_logo").src = fapp_logo;
+		
+		//Insert Clients
+		refresh_clients(true);
+	};
+	get_side_bar.send();
+}
+
+//Main
 check_page();

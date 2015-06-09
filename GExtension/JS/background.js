@@ -56,10 +56,33 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 	}else if(message.action == 'prompt_message'){
 		var opt = {
 		  type: "basic",
-		  title: "Inicie sesión en Facturapp",
-		  message: "Inicie sesión en Facturapp usando el ícono en la barra de navegación.",
+		  title: message.title,
+		  message: message.msg,
 		  iconUrl: icon_in
 		};
 		chrome.notifications.create(opt);
+	}else if(message.action == 'show_progress'){
+		var opt = {
+			type: "progress",
+			title: message.title,
+			message: message.msg,
+			iconUrl: icon_in,
+			progress: message.progress
+		};
+		if(message.progress != 0){
+			chrome.storage.local.get("progid",function(data){
+				if(data["progid"]){
+					chrome.notifications.update(data["progid"],opt);
+				}else{
+					chrome.notifications.create(opt,function(id){
+						chrome.storage.local.set({progid:id});
+					});
+				}
+			});
+		}else{
+			chrome.notifications.create(opt,function(id){
+				chrome.storage.local.set({progid:id});
+			});
+		}
 	}
 });
