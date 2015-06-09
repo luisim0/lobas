@@ -25,14 +25,14 @@ const office_generic = chrome.extension.getURL("IMGs/edificio.png");
 const sidebar_URL = chrome.extension.getURL("/SrcHTML/sidebar.html");
 const client_box = chrome.extension.getURL("/SrcHTML/client_box.html");
 const popup_box = chrome.extension.getURL("/SrcHTML/client_input.html");
-const add_client_php = "http://facturapp.eu.pn/PHP/addClient.php";
-const edit_client_php = "http://facturapp.eu.pn/PHP/editClient.php";
-const del_clients_php = "http://facturapp.eu.pn/PHP/deleteClient.php";
-const get_clients_php = "http://facturapp.eu.pn/PHP/getClients.php";
-const is_logged_php = "http://facturapp.eu.pn/PHP/isLogged.php";
-const get_pass_php = "http://facturapp.eu.pn/PHP/getPassword.php";
-const add_invoice_php = "http://facturapp.eu.pn/PHP/addInvoice.php";
-const get_folios_php = "http://facturapp.eu.pn/PHP/getFolios.php";
+const add_client_php = "http://uberprototech.com/facturapp/PHP/addClient.php";
+const edit_client_php = "http://uberprototech.com/facturapp/PHP/editClient.php";
+const del_clients_php = "http://uberprototech.com/facturapp/PHP/deleteClient.php";
+const get_clients_php = "http://uberprototech.com/facturapp/PHP/getClients.php";
+const is_logged_php = "http://uberprototech.com/facturapp/PHP/isLogged.php";
+const get_pass_php = "http://uberprototech.com/facturapp/PHP/getPassword.php";
+const add_invoice_php = "http://uberprototech.com/facturapp/PHP/addInvoice.php";
+const get_folios_php = "http://uberprototech.com/facturapp/PHP/getFolios.php";
 //Globals
 var json_arr;
 var prev_search = "";
@@ -841,29 +841,33 @@ function state_emi_down(stack){
 	}else if(window.location.href.indexOf(iqaccess_url) != -1){//Reached iq access manager
 		console.warn(Date.now() + " - state_emi: Reached the iqaccess page. Redirecting...");
 		window.location.href = emi_url;
-	}else if(window.location.href.indexOf(login_2_pass) != -1){
-		console.warn(Date.now() + " - state_emi: Reached a known unharmful page. SAT site is redirecting...");
-		null;//Wait for it to reload... stupid SAT!
-	}else if(window.location.href.indexOf(login_1_pass) != -1 || window.location.href.indexOf(login_fiel_url) != -1){
+	}else if(window.location.href.indexOf(login_1_pass) != -1 && document.getElementById("msgError")){
 		console.warn(Date.now() + " - state_emi: Wrong password. Prompting user to skip...");
 		if(confirm("El password no parece funcionar ¿Desea saltar al siguiente usuario?")){
 			if(stack.current_elem + 1 == stack.ids.length){//No more users to track
 				chrome.storage.local.remove("stack");
+				console.log("%c" + Date.now() + " - state_emi: User skipped and process finished","color:red");
 				alert("No hay más usuarios en la lista");
 				window.location.href = login_con_url;
 			}else{
-				stack.current_elem += 1;
-				window.location.href = login_con_url;
+				stack.current_elem += 1;stack.current_state = 0;
+				chrome.storage.local.set({stack:stack},function(){
+					console.log("%c" + Date.now() + " - state_emi: User skipped but process continues...","color:red");
+					window.location.href = login_con_url;
+				});
 			}
 		}else{
+			console.log("%c" + Date.now() + " - state_emi: User killed the process","color:red");
 			chrome.storage.local.remove("stack");
 			window.location.href = login_con_url;
 		}
+	}else if(window.location.href.indexOf(login_1_pass) != -1 || window.location.href.indexOf(login_2_pass) != -1){
+		console.warn(Date.now() + " - state_emi: Reached a known unharmful page. SAT site is redirecting...");
+		null;//Wait for it to reload... stupid SAT!
 	}else{//Sepa la chingada
 		console.warn(Date.now() + " - state_emi: Reached a weird page " + window.location.href);
 		stack.error = true; stack.current_state = 2;
 		chrome.storage.local.set({stack:stack},function(){
-			console.log(Date.now() + " - state_emi: Trying to keep in track. Moving to state: " + stack.current_state);
 			window.location.href = stack.state_urls[stack.current_state];
 		});
 		return false;
