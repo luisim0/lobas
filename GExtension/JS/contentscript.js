@@ -148,6 +148,7 @@ function add_listeners(){
 			}
 		});
 	}
+	document.getElementById("fapp_cat_1").click();//Open clients automatically
 	
 	//Selection tools - Select all and none
 	document.getElementById("fapp_client_all").addEventListener('click',function(){
@@ -311,8 +312,17 @@ function add_listeners(){
 	});
 	
 	//DOWNLOAD!
-	document.getElementById("test").addEventListener('click',download_process);
+	var date = new Date();
+	var year = date.getFullYear();
+	var month = date.getMonth();
+	document.getElementById("fapp_select_year")[year - 2014].selected = true;
+	document.getElementById("fapp_select_month")[month].selected = true;
+	document.getElementById("fapp_select_download").addEventListener('click',download_process);
 }
+
+String.prototype.addLeftZero = function(){
+	if(this.length == 1){return "0" + this;}else{return this;} 
+};
 
 function client_input_check(){
 	var name = document.getElementById("fapp_input_name");
@@ -539,6 +549,9 @@ function query_client_change(option, client){
 }
 
 function create_stack(){
+	var year = document.getElementById("fapp_select_year").value;
+	var month = document.getElementById("fapp_select_month").value;
+	month = month.addLeftZero();
 	return {
 			current_elem: 0,
 			current_state: 0,
@@ -552,13 +565,13 @@ function create_stack(){
 				rec_url
 			],
 			error: false,
+			tries: 0,
 			finished: false,
-			date_start: "01/03/2015",
-			date_end: "31/03/2015",
-			month: "3"
+			date_start: "01/" + month + "/" + year,
+			date_end: daysInMonth(month,year) + "/" + month + "/" + year
 			};
 }
-
+	
 function gen_stack(){
 	var selected = document.getElementsByClassName("fapp_client_selected");
 	if(selected.length != 0){
@@ -578,23 +591,18 @@ function gen_stack(){
 
 function download_process(){
 	var stack = gen_stack();
-	if(stack){//Success creating stack
+	if(stack){
 		chrome.storage.local.set({stack:stack},function(){
 			window.location.href = login_con_url;
 		});
-		//var jsoned = JSON.parse('{"action":"prompt_message","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan"}');
-		//chrome.extension.sendMessage(jsoned);
-		//jsoned = JSON.parse('{"action":"show_progress","title":"Inició proceso de descarga","msg":"Por favor espere a que las descargas se concluyan","progress":30}');
-		//chrome.extension.sendMessage(jsoned);
 	}
-	//If successfull: document.getElementById("test").removeEventListener('click',download_process);
 }
 
 function check_page(){
 	chrome.storage.local.get("stack",function(data){
 		if(data["stack"]){//stack exists - it may be new or an error stack
 			var stack = data["stack"];
-			if(stack.download_active && !stack.error){
+			if(stack.download_active && !stack.error){//A fine stack
 				console.log(Date.now() + " - Stack detected, current state: " + stack.current_state);
 				switch(stack.current_state){//Save stack process must be included inside each function
 					case 0: state_login(stack); break;
@@ -602,11 +610,9 @@ function check_page(){
 					case 2: state_emi_down(stack); break;
 					case 3: state_rec_down(stack); break;
 					case 4: state_logout(stack); break;
-					//case 4: state_logout(stack); break;
 					default: null;//Error
 				}
-			}else if(stack.download_active){//Error stack - this should depart from login page exclusively!!
-				console.log(Date.now() + " - The stack file reported an error");
+			}else if(stack.download_active && window.location.href.indexOf(login_con_url)){//Error stack - this should depart from login page exclusively!!
 				if(confirm('Ocurrió un error pero existe un proceso de descarga no completado. ¿Desea continuar ahora?')){
 					stack.error = false;
 					console.log(Date.now() + " - User wanted to continue process, page will reload");
@@ -619,8 +625,8 @@ function check_page(){
 					is_session_active();
 				}
 			}else{//Normal Entrace
-				console.warn(Date.now() + " - Something weird happened with stack and it's been eliminated");
 				chrome.storage.local.remove("stack");
+				console.warn(Date.now() + " - Something weird happened with stack and it's been eliminated");
 				is_session_active();
 			}
 		}else{//Normal Entrace - no stack
@@ -628,6 +634,38 @@ function check_page(){
 			window.location.href.indexOf(login_con_url) != -1 ? is_session_active() : null;
 		}
 	});
+}
+
+function onServerError(stack,msg){
+	if(stack.tries == 3){
+		console.warn("%c" + Date.now() + " - state_" + stack.current_state + ": Server error: " + msg + " - Propting user to retry","color:red");
+		if(confirm("Ocurrió un problema con los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
+			console.log("%c" + Date.now() + " - state_" + stack.current_state + ": User will retry","color:green");
+			stack.tries = 0;
+			chrome.storage.local.set({stack:stack},function(){
+				window.location.href = stack.urls[stack.current_State];
+			});
+		}else{
+			console.log("%c" + Date.now() + " - state_" + stack.current_state + ": User won't retry","color:orange");
+			stack.error = true; stack.tries = 0;
+			if(document.getElementById("ctl00_LnkBtnCierraSesion")){//Session was already started
+				stack.current_state = 4;//Prepare logout routine
+				chrome.sorage.local.set({stack:stack},function(){
+					document.getElementById("ctl00_LnkBtnCierraSesion").click();
+				});
+			}else{//No session started - Back to basics
+				stack.current_state = 0;
+				current.storage.local.set({stack:stack},function(){
+					window.location.href = stack.urls[stack.current_state];
+				});
+			}
+		}
+	}else{
+		stack.tries += 1;
+		chrome.storage.local.set({stack:stack},function(){
+			window.location.href = stack.urls[stack.current_state];
+		});
+	}
 }
 
 function state_login(stack){
@@ -638,10 +676,7 @@ function state_login(stack){
 		jsoned.data[0] = {name:"ClientID",value:stack.ids[stack.current_elem]};
 		chrome.extension.sendMessage(jsoned,function(response){//Ask for password
 			if(response.answer == 'Error' || response.answer.indexOf('<br>') != -1){
-				console.warn(Date.now() + " - state_login: Asked for user password, retrieved error");
-				stack.error = true;
-				chrome.storage.local.set({stack:stack});
-				window.location.href = stack.state_urls[stack.current_state];
+				onServerError(stack,"Could not retrieve password");
 			}else{
 				console.log(Date.now() + " - state_login: Pasting user data values");
 				if(document.getElementsByName('Ecom_User_ID')){//This prevents the system to throw error if page is redirected by SAT
@@ -706,16 +741,8 @@ function request_invoice(facs,folio,valid,link,stack){
 		val_changed = false;
 		chrome.extension.sendMessage(jsoned,function(response){//Write to database
 			if(response.answer.indexOf('Scs') == -1){//Error writing database
-				console.warn(Date.now() + " - state_req: Database writting failed, servers possibly offline. Prompting user to decide reload...");
-				if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
-					console.log(Date.now() + " - state_req: User selected to reload. Moving to state: " + stack.current_state);
-					window.location.href = stack.state_urls[stack.current_state];
-				}else{
-					console.log(Date.now() + " - state_req: User decided not to reload, marking error on stack and letting go");
-					stack.error = true;
-					chrome.storage.local.set({stack:stack});
-				}
-			}else{//Dispatch to next state if all invoices have been captured
+				onServerError(stack,"Database could not be written");
+			}else{//Dispatch to next invoice or finish!
 				jsoned.data[3].value == 1 ? console.log("%c" + Date.now() + " - state_req: Effectively changed invoice: " + count, "color:purple") : console.log("%c" + Date.now() + " - state_req: Effectively captured invoice: " + count, "color:blue");
 				moveNextState(stack);
 			}
@@ -730,8 +757,8 @@ function request_invoice(facs,folio,valid,link,stack){
 function moveNextState(stack){
 	count += 1;
 	var allfacs = document.getElementsByName('BtnDescarga');
-	var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + allfacs.length + '"}');
-	jsoned.progress = parseInt(100/allfacs.length * count);
+	var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Factura: ' + count + " de " + allfacs.length + '"}');
+	jsoned.progress = parseInt(100/allfacs.length * count);	
 	chrome.extension.sendMessage(jsoned);
 	if(count == allfacs.length){
 		console.log("%c" + Date.now() + " - state_req: All invoices have been captured","color:green");
@@ -756,15 +783,7 @@ function getFolios(stack){
 	 
 	chrome.extension.sendMessage(jsoned,function(response){
 		if(response.answer == "Error"){
-			console.warn(Date.now() + " - state_emi: Could not get Folios. Prompting user to decide reload...");
-			if(confirm("Ocurrió un error al contactar a los servidores de Facturapp. ¿Desea intentarlo de nuevo?")){
-				console.log(Date.now() + " - state_emi: User selected to reload. Redirecting...");
-				window.location.href = stack.state_urls[stack.current_state];
-			}else{
-				console.log(Date.now() + " - state_emi: User decided not to reload, marking error on stack and letting go");
-				stack.error = true;
-				chrome.storage.local.set({stack:stack});
-			}
+			onServerError(stack,"Could not retrieve folios");
 		}else{
 			chrome.storage.local.set({folios:response.answer},function(){
 				document.dispatchEvent(uploadRequest);
@@ -952,11 +971,14 @@ function state_rec_down(stack){
 
 function state_logout(stack){
 	if(window.location.href.indexOf(logout_url) != -1 || window.location.href.indexOf(logout_1_pass) != -1 || window.location.href.indexOf(logout_2_pass) != -1){//Reached a known logout page
-		console.log(Date.now() + " - state_logout: Reached a friendly logout page.");
 		if(document.body.innerText.indexOf(loguot_token) != -1){//Reached the last logout page
+			console.log(Date.now() + " - state_logout: Reached the logout page");
 			var n = stack.ids.length - 1;
 			var i = stack.current_elem;
-			if(i != n){//Not the end
+			if(stack.error){//Error
+				console.log("%c" + Date.now() + " - state_logout: Redirecting due to error...","color:red");
+				window.location.href = login_con_url;
+			}else if(i != n){//Not the end
 				console.log(Date.now() + " - state_logout: Updating stack element...");
 				stack.current_elem += 1; stack.current_state = 0;
 				chrome.storage.local.set({stack:stack},function(){
@@ -964,7 +986,6 @@ function state_logout(stack){
 					window.location.href = stack.state_urls[stack.current_state];
 				});
 			}else{//The end
-				console.log(Date.now() + " - state_logout: Reached the end of the stack. Redirecting to init page...");
 				chrome.storage.local.remove("stack",function(){
 					console.log("%c" + Date.now() + " - state_logout: Happily ended!","color:green");
 					window.location.href = login_con_url;
@@ -1029,6 +1050,10 @@ function build_menu(){
 		refresh_clients(true);
 	};
 	get_side_bar.send();
+}
+
+function daysInMonth(month,year) {
+    return new Date(year, month, 0).getDate();
 }
 
 //Main
