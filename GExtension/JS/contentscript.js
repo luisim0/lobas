@@ -643,27 +643,27 @@ function onServerError(stack,msg){
 			console.log("%c" + Date.now() + " - state_" + stack.current_state + ": User will retry","color:green");
 			stack.tries = 0;
 			chrome.storage.local.set({stack:stack},function(){
-				window.location.href = stack.urls[stack.current_State];
+				window.location.href = stack.state_urls[stack.current_State];
 			});
 		}else{
 			console.log("%c" + Date.now() + " - state_" + stack.current_state + ": User won't retry","color:orange");
-			stack.error = true; stack.tries = 0;
+			stack.error = false; stack.tries = 0;
 			if(document.getElementById("ctl00_LnkBtnCierraSesion")){//Session was already started
 				stack.current_state = 4;//Prepare logout routine
-				chrome.sorage.local.set({stack:stack},function(){
+				chrome.storage.local.set({stack:stack},function(){
 					document.getElementById("ctl00_LnkBtnCierraSesion").click();
 				});
 			}else{//No session started - Back to basics
 				stack.current_state = 0;
 				current.storage.local.set({stack:stack},function(){
-					window.location.href = stack.urls[stack.current_state];
+					window.location.href = stack.state_urls[stack.current_state];
 				});
 			}
 		}
 	}else{
 		stack.tries += 1;
 		chrome.storage.local.set({stack:stack},function(){
-			window.location.href = stack.urls[stack.current_state];
+			window.location.href = stack.state_urls[stack.current_state];
 		});
 	}
 }
