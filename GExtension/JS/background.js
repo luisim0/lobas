@@ -81,7 +81,7 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 						chrome.notifications.create(oldOpt,function(id){
 							chrome.storage.local.set({progid:id});
 						});
-					},8100);//Notifications last about this amount of ms
+					},8600);//Notifications last about this amount of ms
 				});
 			});
 		}else{
