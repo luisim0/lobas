@@ -758,7 +758,8 @@ function moveNextState(stack){
 	count += 1;
 	var allfacs = document.getElementsByName('BtnDescarga');
 	var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Factura: ' + count + " de " + allfacs.length + '"}');
-	jsoned.progress = parseInt(100/allfacs.length * count);	
+	jsoned.progress = parseInt(100/allfacs.length * count);
+	(count > 0 && jsoned.progress) == 0 ? jsoned.progress = 1 : null; 
 	chrome.extension.sendMessage(jsoned);
 	if(count == allfacs.length){
 		console.log("%c" + Date.now() + " - state_req: All invoices have been captured","color:green");
@@ -824,7 +825,7 @@ function state_emi_down(stack){
 			if(facs.length != 0){//If there are invoices..
 				count = 0;
 				console.log(Date.now() + " - state_emi: Invoices have been displayed, acquiring...");
-				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Factura: ' + count + " de " + facs.length + '"}'); jsoned.progress = 0;
 				chrome.extension.sendMessage(jsoned);
 				getFolios(stack);
 				return false;
@@ -924,7 +925,7 @@ function state_rec_down(stack){
 			if(facs.length != 0){//If there are invoices..
 				count = 0;
 				console.log(Date.now() + " - state_rec: Invoices have been displayed, acquiring...");
-				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Facturas totales: ' + facs.length + '"}'); jsoned.progress = 0;
+				var jsoned = JSON.parse('{"action":"show_progress","progress":"","title":"Guardando Facturas","msg":"Factura: ' + count + " de " + facs.length + '"}'); jsoned.progress = 0;
 				chrome.extension.sendMessage(jsoned);
 				getFolios(stack);
 				return false;

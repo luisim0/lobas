@@ -1,4 +1,7 @@
 var icon_in = chrome.extension.getURL("Icons/icon128.png");
+var fenix = null;
+var trigger = false;
+var oldOpt = null;
 
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 	if(message.action == 'get_php'){
@@ -21,7 +24,7 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 			req.send();
 		}else if(method == "POST"){
 			req.open("POST", message.url, true);
-			req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			req.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=UTF-8");
 			req.send(resdata);
 		}
 		
@@ -67,21 +70,24 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse){
 			title: message.title,
 			message: message.msg,
 			iconUrl: icon_in,
-			progress: message.progress
+			progress: message.progress,
 		};
-		if(message.progress != 0){
-			chrome.storage.local.get("progid",function(data){
-				if(data["progid"]){
-					chrome.notifications.update(data["progid"],opt);
-				}else{
-					chrome.notifications.create(opt,function(id){
-						chrome.storage.local.set({progid:id});
-					});
-				}
+		oldOpt = opt;
+		if(message.progress == 0){
+			chrome.notifications.create(opt,function(id){
+				chrome.storage.local.set({progid:id},function(){
+					if(fenix) clearInterval(fenix);
+					fenix = setInterval(function(){
+						chrome.notifications.create(oldOpt,function(id){
+							chrome.storage.local.set({progid:id});
+						});
+					},8100);//Notifications last about this amount of ms
+				});
 			});
 		}else{
-			chrome.notifications.create(opt,function(id){
-				chrome.storage.local.set({progid:id});
+			chrome.storage.local.get("progid",function(data){
+				chrome.notifications.update(data["progid"],opt);
+				if(message.progress == 100){if(fenix) clearInterval(fenix);}
 			});
 		}
 	}
