@@ -1002,8 +1002,9 @@ function state_logout(stack){
 }
 
 String.prototype.decodeHtmlEntity = function() {
-	var res = this.replace(/&#(\d+);/g,function(match, dec){return String.fromCharCode(dec);});
-	return res.replace(/&#(\w+);/g,"");
+	//var res = this.replace(/&#(\d+);/g,function(match, dec){return String.fromCharCode(dec);});
+	//return res.replace(/&#(\w+);/g,"");
+	return encodeURIComponent(this);
 };
 
 function is_session_active(){
