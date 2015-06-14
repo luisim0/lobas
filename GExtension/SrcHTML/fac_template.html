@@ -1,6 +1,175 @@
 <head>
+	<title>Factura template</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<link rel="stylesheet" type="text/css" href="../CSS/fac_template.css" />
+	<style>
+		body{
+			font-family:sans-serif;
+		}
+		
+		table{
+			width:100%;
+			border-collapse:collapse;
+		}
+		
+		th{
+			font-weight:bold;
+			text-align:left;
+			font-size:12pt;
+		}
+		
+		td{
+			font-size:10pt;
+		}
+		
+		td div{
+			width:416px;
+			white-space: nowrap;
+			overflow:hidden;
+			text-overflow:ellipsis;
+		}
+		
+		tr:nth-child(even){
+			background-color:#feeae9;
+		}
+		
+		.fac_tb_center{
+			text-align:center;
+		}
+		
+		.fac_tb_right{
+			text-align:right;
+			padding-right:5px;
+		}
+		
+		.fac_main_page{
+			width:8.5in;
+			height:11in;
+		}
+		
+		.fac_heading{
+			width:100%;
+			/*height:50px;*/
+			display:table;
+		}
+		
+		.fac_container_right{
+			width:50%;
+			display:table-cell;
+			text-align:right;
+		}
+		
+		.fac_subtitle{
+			width:100%;
+			height:16pt;
+			background-color:#dcdcdc;
+			color:#ca3434;
+			font-size:14pt;
+			font-weight:bold;
+		}
+		
+		.fac_contents_right{
+			font-size:14pt;
+			padding-top:10px;
+		}
+		
+		.fac_title{
+			width:50%;
+			height:60px;
+			background-color:#c0504d;
+			text-align:center;
+			vertical-align:middle;
+			font-size:18pt;
+			color:white;
+			display:table-cell;
+		}
+		
+		.fac_rfc_part{
+			width:100%;
+			border-top: 3px solid #c0504d;
+			margin-top: 10px;
+		}
+		
+		.fac_rfc_holder{
+			width:100%;
+			display:table;
+		}
+		
+		.fac_name_address{
+			width:70%;
+			text-overflow:clip;
+			display:table-cell;
+		}
+		
+		.fac_rfc_name{
+			font-weight:bold;   
+		}
+		
+		.fac_rfc{
+			display:table-cell;
+			text-align:center;
+			font-size:14pt;
+			font-weight:bold;
+			vertical-align:middle;
+		}
+		
+		.fac_rfc_regime{
+			text-align:center;
+			font-size:10pt;
+			color:#ca3434;
+		}
+		
+		.fac_amounts_container{
+			width:100%;
+			margin:10px 0px;
+			display:table;
+		}
+		
+		.fac_third_data{
+			display:table-cell;
+			width:33%;
+			text-align:center;
+			padding:0px 5px;
+		}
+		
+		.fac_tax_holder{
+			width:100%;
+			border-bottom:black thin solid;
+		}
+		
+		.fac_container_left{
+			text-align:left;
+			width:50%;
+			display:table-cell;
+		}
+		
+		.fac_folio_container{
+			width:calc(100% - 40px);
+			padding: 5px 20px;
+			overflow:hidden;
+		}
+		
+		.fac_folio_title{
+			font-weight:bold;
+		}
+		
+		.fac_folio{
+			width:100%;
+			text-overflow:clip;
+			word-break:break-all;
+			font-size:10pt;
+		}
+		
+		.fac_container_tab{
+			display:table-column;
+		}
+		
+		.fac_QR{
+			width:5cm;
+			height:5cm;
+			margin:5px 100px;
+			border:solid black thin;
+		}
+	</style>
 </head>
 <body>
 	<div class="fac_main_page">
@@ -8,37 +177,43 @@
 			<div class="fac_title">Factura Electrónica (CFDI)</div>
 			<div class="fac_container_right">
 				<div class="fac_subtitle">Lugar fecha y hora de emisión:</div>
-				<div class="fac_contents_right">MÉXICO D.F. 2012-01-02T20:20:00</div>
+				<div class="fac_contents_right" id="fac_lugarFecha">LUGAR FECHA</div>
 			</div>
 		</div>
 		<div class="fac_heading">
 			<div class="fac_container_right">
 				<div class="fac_subtitle">No. de serie del certificado del CSD:</div>
-				<div class="fac_contents_right">30001000000100000999</div>
+				<div class="fac_contents_right" id="fac_certCSD">XXXXXXXXXXXXX</div>
 			</div>
 			<div class="fac_container_right">
 				<div class="fac_subtitle">Folio Fiscal:</div>
-				<div class="fac_contents_right">ad662d33-6934-459c-a128-bdf0393e0f44</div>
+				<div class="fac_contents_right" id="fac_uuid">XXX-XXX-XXX-XXX-XXXXX</div>
 			</div>
 		</div>
 		<div class="fac_rfc_part">
-			<div class="fac_subtitle">Datos del Emisor: UBERPROTO TECHNOLOGIES SA DE CV</div>
+			<div class="fac_subtitle">Datos del Emisor:</div>
 			<div class="fac_rfc_holder">
-				<div class="fac_rfc_address">CALZADA DEL HUESO 670 LOS ROBLES C.P 04870 DELEGACION COYOACAN MEXICO DF</div>
-				<div class="fac_rfc">CRAC800914ER9</div>
+				<div class="fac_name_address">
+					<div class="fac_rfc_name" id="fac_enombre">NOMBRE EMISOR</div>
+					<div class="fac_rfc_address" id="fac_edir">DIRECCIÓN EMISOR</div>
+				</div>
+				<div class="fac_rfc" id="fac_erfc">RFC123456A123</div>
 			</div>
-			<div class="fac_rfc_regime">REGIMEN GENERAL DE LEY PERSONAS MORALES</div>
+			<div class="fac_rfc_regime" id="fac_eregime">REGIMEN GENERAL DE LEY PERSONAS MORALES</div>
 		</div>
 		<div class="fac_rfc_part">
 			<div class="fac_subtitle">Datos del Receptor:</div>
 			<div class="fac_rfc_holder">
-				<div class="fac_rfc_address">HACIENDA VISTA HERMOSA 4-3 VILLA QUIETUD C.P 04960 COYOACAN DF</div>
-				<div class="fac_rfc">UTE150219H68</div>
+				<div class="fac_name_address">
+					<div class="fac_rfc_name" id="fac_rnombre">NOMBRE RECEPTOR</div>
+					<div class="fac_rfc_address" id="fac_rdir">DIRECCIÓN RECEPTOR</div>
+				</div>
+				<div class="fac_rfc" id="fac_rrfc">RFC123456A123</div>
 			</div>
 		</div>
 		<div class="fac_rfc_part">
 			<div class="fac_subtitle">Conceptos:</div>
-			<table><tbody>
+			<table><tbody id="fac_addConcepto">
 				<tr>
 					<th class="fac_tb_center" width="40px">Cant.</th>
 					<th class="fac_tb_center" width="120px">Unidad</th>
@@ -46,28 +221,96 @@
 					<th class="fac_tb_right" width="120px">P. Unitario</th>
 					<th class="fac_tb_right" width="120px">Importe</th>
 				</tr>
-				<tr>
-					<td class="fac_tb_center">1</td>
-					<td class="fac_tb_center">PIEZA</td>
-					<td><div>LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830</div></td>
-					<td class="fac_tb_right">$116.38</td>
-					<td class="fac_tb_right">$116.38</td>
-				</tr>
-				<tr>
-					<td class="fac_tb_center">1</td>
-					<td class="fac_tb_center">PIEZA</td>
-					<td><div>LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830</div></td>
-					<td class="fac_tb_right">$116.38</td>
-					<td class="fac_tb_right">$116.38</td>
-				</tr>
-				<tr>
-					<td class="fac_tb_center">1</td>
-					<td class="fac_tb_center">PIEZA</td>
-					<td><div>LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830 LACA SPRAY GLOSE CLEAR 1906-830</div></td>
-					<td class="fac_tb_right">$116.38</td>
-					<td class="fac_tb_right">$116.38</td>
-				</tr>
 			</tbody></table>
+			<div class="fac_amounts_container">
+				<div class="fac_third_data">
+					<div class="fac_subtitle">Impuestos trasladados</div>
+					<div class="fac_tax_holder">
+						<table><tbody id="fac_addTraslado">
+							<tr>
+								<th class="fac_tb_center">TIPO</th>
+								<th class="fac_tb_center">TASA</th>
+								<th class="fac_tb_right">$</th>
+							</tr>
+						</tbody></table>
+					</div>
+				</div>
+				<div class="fac_third_data">
+					<div class="fac_subtitle">Impuestos retenidos</div>
+					<div class="fac_tax_holder">
+						<table><tbody id="fac_addRetencion">
+							<tr>
+								<th class="fac_tb_center">TIPO</th>
+								<th class="fac_tb_right">$</th>
+							</tr>
+						</tbody></table>
+					</div>
+				</div>
+				<div class="fac_third_data">
+					<div class="fac_subtitle">General</div>
+					<div class="fac_tax_holder">
+						<table><tbody>
+							<tr>
+								<td>SUBTOTAL</td><td class="fac_tb_right" id="fac_subtotal">$400.00</td>
+							</tr>
+							<tr>
+								<td>DESCUENTO</td><td class="fac_tb_right" id="fac_descuento">$120.00</td>
+							</tr>
+							<tr>
+								<td>TRASLADADOS</td><td class="fac_tb_right" id="fac_trasladados">$20.00</td>
+							</tr>
+							<tr>
+								<td>RETENIDOS</td><td class="fac_tb_right" id="fac_retenidos">$10.00</td>
+							</tr>
+							<tr>
+								<th>TOTAL</th><th class="fac_tb_right" id="fac_total">$510.00</th>
+							</tr>
+						</tbody></table>
+					</div>
+				</div>
+			</div>
+			<div class="fac_heading">
+				<div class="fac_container_left">
+					<div class="fac_subtitle">Tipo de pago:</div>
+					<div class="fac_contents_left">PAGO EN UNA SOLA EXHIBICIÓN</div>
+				</div>
+				<div class="fac_container_left">
+					<div class="fac_subtitle">Características del pago:</div>
+					<div class="fac_contents_left">PAGO EN EFECTIVO</div>
+				</div>
+			</div>
+			<div class="fac_rfc_part">
+				<div class="fac_folio_container">
+					<div class="fac_folio_title">Sello Digital del CFDI:</div>
+					<div class="fac_folio">tOSe+Ex/wvn33YIGwtfmrJwQ31Crd7II9VcH63TGjHfxk5cfb3q9uSbDUGk9TXvo70ydOpikRVw+9B2Six0mbu3PjoPpO909oAYITrRyomdeUGJ4vmA2/12L86EJLWpU7vlt4cL8HpkEw7TOFhSdpzb/890+jP+C1adBsHU1VHc=</div>
+				</div>
+				<div class="fac_folio_container">
+					<div class="fac_folio_title">Sello del SAT:</div>
+					<div class="fac_folio">j5bSpqM3w0+shGtlmqOwqqy6+d659O78ckfstu5vTSFa+2CVMj6Awfr18x4yMLGBwk6ruYbjBIVURodEII6nJIhTTUtYQV1cbRDG9kvvhaNAakxqaSOnOnOx79nHxqFPRVoqh10CsjocS9PZkSM2jz1uwLgaF0knf1g8pjDkLYwlk=</div>
+				</div>
+				<div class="fac_folio_container">
+					<div class="fac_folio_title">Cadena Original del complemento de certificación digital del SAT:</div>
+					<div class="fac_folio">||1.0|ad662d33-6934-459c-a128-bdf0393e0f44|2012-01-02T20:20:10|47Z|itOSe+Ex/wvn33YIGwtfmrJwQ31Crd7II9VcH63TGjHfxk5cfb3q9uSbDUGk9TXvo70ydOpikRVw+9B2Six0mbu3PjoPpO909oAYITrRyomdeUGJ4vmA2/12L86EJLWpU7vlt4cL8HpkEw7TOFhSdpzb/890+jP+C1adBsHU1VHc=|30001000000100000801||</div>
+				</div>
+			</div>
+			<div class="fac_heading">
+				<div class="fac_container_left">
+					<div class="fac_subtitle">Código QR:</div>
+					<div class="fac_contents_left">
+						<div class="fac_QR"></div>
+					</div>
+				</div>
+				<div class="fac_container_left">
+					<div class="fac_subtitle">No de Serie del Certificado del SAT:</div>
+					<div class="fac_contents_left">30001000000100000801</div>
+					<div class="fac_subtitle">Fecha y hora de certificación:</div>
+					<div class="fac_contents_left">2012-01-02T20:20:10</div>
+					<div class="fac_subtitle">Notas:</div>
+					<div class="fac_contents_left" style="font-weight:bold">Este documento es una representación impresa de un CFDI</div>
+					<div class="fac_contents_left" style="font-style:italic;margin-top:10px">Los datos mostrados fueron obtenidos del archivo XML con la CFDI utilizando la extensión gratuita para Google Chrome "Lector de facturas mexicanas XML" de Uberproto Technologies S.A. de C.V.</div>
+				</div>
+			</div>
+			<div class="fac_rfc_part"></div>
 		</div>
 	</div>
 </body>

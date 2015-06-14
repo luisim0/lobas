@@ -47,7 +47,7 @@ tr:nth-child(even){
 
 .fac_heading{
 	width:100%;
-	height:50px;
+	/*height:50px;*/
 	display:table;
 }
 
@@ -63,6 +63,7 @@ tr:nth-child(even){
 	background-color:#dcdcdc;
 	color:#ca3434;
 	font-size:14pt;
+	font-weight:bold;
 }
 
 .fac_contents_right{
@@ -82,6 +83,7 @@ tr:nth-child(even){
 }
 
 .fac_rfc_part{
+	width:100%;
 	border-top: 3px solid #c0504d;
 	margin-top: 10px;
 }
@@ -91,10 +93,14 @@ tr:nth-child(even){
 	display:table;
 }
 
-.fac_rfc_address{
+.fac_name_address{
 	width:70%;
 	text-overflow:clip;
 	display:table-cell;
+}
+
+.fac_rfc_name{
+	font-weight:bold;	
 }
 
 .fac_rfc{
@@ -109,4 +115,56 @@ tr:nth-child(even){
 	text-align:center;
 	font-size:10pt;
 	color:#ca3434;
+}
+
+.fac_amounts_container{
+	width:100%;
+	margin:10px 0px;
+	display:table;
+}
+
+.fac_third_data{
+	display:table-cell;
+	width:33%;
+	text-align:center;
+	padding:0px 5px;
+}
+
+.fac_tax_holder{
+	width:100%;
+	border-bottom:black thin solid;
+}
+
+.fac_container_left{
+	text-align:left;
+	width:50%;
+	display:table-cell;
+}
+
+.fac_folio_container{
+	width:calc(100% - 40px);
+	padding: 5px 20px;
+	overflow:hidden;
+}
+
+.fac_folio_title{
+	font-weight:bold;
+}
+
+.fac_folio{
+	width:100%;
+	text-overflow:clip;
+	word-break:break-all;
+	font-size:10pt;
+}
+
+.fac_container_tab{
+	display:table-column;
+}
+
+.fac_QR{
+	width:5cm;
+	height:5cm;
+	margin:5px 100px;
+	border:solid black thin;
 }
