@@ -75,18 +75,18 @@ var facData = {};
 var xmlFac = document.getElementById("collapsible0").innerText.makeHtmlEntities();
 var parser = new DOMParser();
 var xmlFac = parser.parseFromString(xmlFac,"text/xml").documentElement;
-//Namespaces
+/*Namespaces*/
 var cfdi = xmlFac.getAttribute("xmlns:cfdi");
 if(!cfdi) return false;
 var xsi = xmlFac.getAttribute("xmlns:xsi");
 var tfd = xmlFac.getAttribute("xmlns:tfd");
 if(!tfd) tfd = xmlFac.getElementsByTagNameNS("*","TimbreFiscalDigital")[0].getAttribute("xmlns:tfd");
-//General
+/*General*/
 facData.LugarExpedicion = xmlFac.getAttribute("LugarExpedicion");
 facData.fecha = xmlFac.getAttribute("fecha");
 facData.noCertificado = xmlFac.getAttribute("noCertificado");
 facData.UUID = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("UUID");
-//Emisor
+/*Emisor*/
 facData.Enombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("nombre"),"No se encontró un nombre!");
 facData.Erfc = xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("rfc");
 var domFis = xmlFac.getElementsByTagNameNS(cfdi,"DomicilioFiscal")[0].attributes;
@@ -115,7 +115,7 @@ domFisStr = domFisStr.replaceAt(0, "");
 domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");
 facData.DomicilioFiscal = domFisStr;
 facData.Regimen = xmlFac.getElementsByTagNameNS(cfdi,"RegimenFiscal")[0].getAttribute("Regimen");
-//Receptor
+/*Receptor*/
 facData.Rnombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("nombre"),"No se encontró un nombre!");
 facData.Rrfc = xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("rfc");
 var domFis = xmlFac.getElementsByTagNameNS(cfdi,"Domicilio")[0].attributes;
@@ -143,7 +143,7 @@ for(i = 0;i < domFis.length;i++){
 domFisStr = domFisStr.replaceAt(0, "");
 domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");
 facData.Domicilio = domFisStr;
-//Conceptos
+/*Conceptos*/
 var conceptos = xmlFac.getElementsByTagNameNS(cfdi,"Concepto");
 facData.conceptos = [];
 for(i = 0;i < conceptos.length;i++){
@@ -153,7 +153,7 @@ for(i = 0;i < conceptos.length;i++){
 		valorUnitario:conceptos[i].getAttribute("valorUnitario").makeVaro(),
 		importe:conceptos[i].getAttribute("importe").makeVaro()};
 }
-//Impuestos trasladados
+/*Impuestos trasladados*/
 var traslados = xmlFac.getElementsByTagNameNS(cfdi,"Traslado");
 facData.traslados = [];
 for(i = 0;i < traslados.length;i++){
@@ -161,30 +161,30 @@ for(i = 0;i < traslados.length;i++){
 		tasa:traslados[i].getAttribute("tasa").makePercent(),
 		importe:traslados[i].getAttribute("importe").makeVaro()};
 }
-//Impuestos retenidos
+/*Impuestos retenidos*/
 var retenciones = xmlFac.getElementsByTagNameNS(cfdi,"Retencion");
 facData.retenciones = [];
 for(i = 0;i < retenciones.length;i++){
 	facData.retenciones[i] = {impuesto:retenciones[i].getAttribute("impuesto"),
 		importe:retenciones[i].getAttribute("importe").makeVaro()};
 }
-//Varo General
+/*Varo General*/
 facData.subTotal = xmlFac.getAttribute("subTotal").makeVaro();
 facData.descuento = isNull(xmlFac.getAttribute("descuento"),"0").makeVaro();
 facData.totalImpuestosTrasladados = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Impuestos")[0].getAttribute("totalImpuestosTrasladados"),"0").makeVaro();
 facData.totalImpuestosRetenidos = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Impuestos")[0].getAttribute("totalImpuestosRetenidos"),"0").makeVaro();
 facData.total = xmlFac.getAttribute("total").makeVaro();
-//Características del Varo
+/*Características del Varo*/
 facData.formaDePago = xmlFac.getAttribute("formaDePago");
 facData.metodoDePago = xmlFac.getAttribute("metodoDePago");
-//Timbre y sellos
+/*Timbre y sellos*/
 facData.selloCFD = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("selloCFD");
 facData.selloSAT = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("selloSAT");
 facData.cadena = buildChain(xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].attributes);
-//Timbrado
+/*Timbrado*/
 facData.noCertificadoSAT = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("noCertificadoSAT");
 facData.FechaTimbrado = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("FechaTimbrado");
-//QR Code
+/*QR Code*/
 var re = "?re=" + xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("rfc");
 var rr = "&rr=" + xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("rfc");
 var tt = "&tt=" + total17(xmlFac.getAttribute("total"));
@@ -206,7 +206,7 @@ function setData(dummyDoc, facData){
 	dummyDoc.getElementById("fac_rnombre").innerHTML = facData.Rnombre;
 	dummyDoc.getElementById("fac_rdir").innerHTML = facData.Domicilio;
 	dummyDoc.getElementById("fac_rrfc").innerHTML = facData.Rrfc;
-	//Fill Concepts
+	/*Fill Concepts*/
 	var classes = ["fac_tb_center","fac_tb_center","","fac_tb_right","fac_tb_right"];
 	for(i = 0;i < facData.conceptos.length;i++){
 		var row = dummyDoc.createElement("tr");
@@ -224,7 +224,7 @@ function setData(dummyDoc, facData){
 		}
 		dummyDoc.getElementById("fac_addConcepto").appendChild(row);
 	}
-	//Fill Trasladados
+	/*Fill Trasladados*/
 	var classes = ["fac_tb_center","fac_tb_center","fac_tb_right"];
 	for(i = 0;i < facData.traslados.length;i++){
 		var row = dummyDoc.createElement("tr");
@@ -240,7 +240,7 @@ function setData(dummyDoc, facData){
 		}
 		dummyDoc.getElementById("fac_addTraslado").appendChild(row);
 	}
-	//Fill Retenidos
+	/*Fill Retenidos*/
 	var classes = ["fac_tb_center","fac_tb_right"];
 	for(i = 0;i < facData.retenciones.length;i++){
 		var row = dummyDoc.createElement("tr");
@@ -255,29 +255,29 @@ function setData(dummyDoc, facData){
 		}
 		dummyDoc.getElementById("fac_addRetencion").appendChild(row);
 	}
-	//Varos generales
+	/*Varos generales*/
 	dummyDoc.getElementById("fac_subtotal").innerHTML = facData.subTotal;
 	dummyDoc.getElementById("fac_descuento").innerHTML = facData.descuento;
 	dummyDoc.getElementById("fac_trasladados").innerHTML = facData.totalImpuestosTrasladados;
 	dummyDoc.getElementById("fac_retenidos").innerHTML = facData.totalImpuestosRetenidos;
 	dummyDoc.getElementById("fac_total").innerHTML = facData.total;
-	//Características
+	/*Características*/
 	dummyDoc.getElementById("fac_tipoPago").innerHTML = facData.formaDePago;
 	dummyDoc.getElementById("fac_formaPago").innerHTML = facData.metodoDePago;
-	//Sellos
+	/*Sellos*/
 	dummyDoc.getElementById("fac_selloDigital").innerHTML = facData.selloCFD;
 	dummyDoc.getElementById("fac_selloSAT").innerHTML = facData.selloSAT;
 	dummyDoc.getElementById("fac_cadenaOriginal").innerHTML = facData.cadena;
 	dummyDoc.getElementById("fac_noSerie").innerHTML = facData.noCertificadoSAT;
 	dummyDoc.getElementById("fac_fechaTimbrado").innerHTML = facData.FechaTimbrado;
-	//QR is made once the html is placed!
+	/*QR is made once the html is placed!*/
 	return {doc:dummyDoc,data:facData};
 }
 
 function callPage(){
 	if(window.location.href.indexOf(".xml") != -1){
-		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}');
-		jsoned.url = chrome.extension.getURL("/SrcHTML/fac_template.html");
+		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}');
+		jsoned.url = chrome.extension.getURL("fac_template.html");
 		
 		chrome.extension.sendMessage(jsoned,function(response){
 			var dummyDoc = document.implementation.createHTMLDocument("dummy");
@@ -286,10 +286,10 @@ function callPage(){
 			if(!res) return false;
 			dummyDoc = res.doc; facData = res.data;
 			dummyDoc.getElementsByTagName("title")[0].innerHTML = facData.UUID;
-			//Window
-			var win = window.open("", "_blank");//, "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=850, height=900");
+			/*Window*/
+			var win = window.open("", "_blank");
 			win.document.documentElement.innerHTML = dummyDoc.documentElement.innerHTML;
-			//QRCode will be changed so it references win.document
+			/*QRCode will be changed so it references win.document*/
 			var qrcode = new QRCode(win.document,"fac_QR",{
 				width:189,
 				height:189
@@ -307,11 +307,11 @@ function callPage(){
 	}
 }
 
-//QR thing
+/*QR thing*/
 var QRCode;
 
 (function () {
-	//---------------------------------------------------------------------
+	/*---------------------------------------------------------------------
 	// QRCode for JavaScript
 	//
 	// Copyright (c) 2009 Kazuhiko Arase
@@ -325,13 +325,12 @@ var QRCode;
 	// DENSO WAVE INCORPORATED
 	//   http://www.denso-wave.com/qrcode/faqpatent-e.html
 	//
-	//---------------------------------------------------------------------
+	//---------------------------------------------------------------------*/
 	function QR8bitByte(data) {
 		this.mode = QRMode.MODE_8BIT_BYTE;
 		this.data = data;
 		this.parsedData = [];
 
-		// Added to support UTF-8 Characters
 		for (var i = 0, l = this.data.length; i < l; i++) {
 			var byteArray = [];
 			var code = this.data.charCodeAt(i);
@@ -455,12 +454,11 @@ var QRCode;
 		return typeof CanvasRenderingContext2D != "undefined";
 	}
 	
-	// android 2.x doesn't support Data-URI spec
 	function _getAndroid() {
 		var android = false;
 		var sAgent = navigator.userAgent;
 		
-		if (/android/i.test(sAgent)) { // android
+		if (/android/i.test(sAgent)) {
 			android = true;
 			var aMat = sAgent.toString().match(/android ([0-9]\.[0-9])/i);
 			
@@ -521,7 +519,6 @@ var QRCode;
 
 	var useSVG = document.documentElement.tagName.toLowerCase() === "svg";
 
-	// Drawing in DOM by using Table tag
 	var Drawing = useSVG ? svgDrawer : !_isSupportCanvas() ? (function () {
 		var Drawing = function (el, htOption) {
 			this._el = el;
@@ -554,7 +551,6 @@ var QRCode;
 			aHTML.push('</table>');
 			_el.innerHTML = aHTML.join('');
 			
-			// Fix the margin values as real size.
 			var elTable = _el.childNodes[0];
 			var nLeftMarginTable = (_htOption.width - elTable.offsetWidth) / 2;
 			var nTopMarginTable = (_htOption.height - elTable.offsetHeight) / 2;
@@ -572,15 +568,13 @@ var QRCode;
 		};
 		
 		return Drawing;
-	})() : (function () { // Drawing in Canvas
+	})() : (function () {
 		function _onMakeImage() {
 			this._elImage.src = this._elCanvas.toDataURL("image/png");
 			this._elImage.style.display = "block";
 			this._elCanvas.style.display = "none";			
 		}
 		
-		// Android 2.1 bug workaround
-		// http://code.google.com/p/android/issues/detail?id=5141
 		if (this._android && this._android <= 2.1) {
 	    	var factor = 1 / window.devicePixelRatio;
 	        var drawImage = CanvasRenderingContext2D.prototype.drawImage; 
@@ -612,7 +606,6 @@ var QRCode;
             self._fFail = fFail;
             self._fSuccess = fSuccess;
 
-            // Check it just once
             if (self._bSupportDataURI === null) {
                 var el = document.createElement("img");
                 var fOnError = function() {
@@ -697,7 +690,6 @@ var QRCode;
 					_oContext.fillStyle = bIsDark ? _htOption.colorDark : _htOption.colorLight;					
 					_oContext.fillRect(nLeft, nTop, nWidth, nHeight);
 					
-					// 안티 앨리어싱 방지 처리
 					_oContext.strokeRect(
 						Math.floor(nLeft) + 0.5,
 						Math.floor(nTop) + 0.5,
@@ -848,7 +840,6 @@ var QRCode;
 			};
 		}
 		
-		// Overwrites options
 		if (vOption) {
 			for (var i in vOption) {
 				this._htOption[i] = vOption[i];
