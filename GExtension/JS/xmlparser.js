@@ -77,7 +77,6 @@ var parser = new DOMParser();
 var xmlFac = parser.parseFromString(xmlFac,"text/xml").documentElement;
 //Namespaces
 var cfdi = xmlFac.getAttribute("xmlns:cfdi");
-if(!cfdi) return false;
 var xsi = xmlFac.getAttribute("xmlns:xsi");
 var tfd = xmlFac.getAttribute("xmlns:tfd");
 if(!tfd) tfd = xmlFac.getElementsByTagNameNS("*","TimbreFiscalDigital")[0].getAttribute("xmlns:tfd");
@@ -195,7 +194,6 @@ return facData;
 }
 
 function setData(dummyDoc, facData){
-	if(!facData) return false;
 	dummyDoc.getElementById("fac_lugarFecha").innerHTML = facData.LugarExpedicion + "<br/>" + facData.fecha;
 	dummyDoc.getElementById("fac_certCSD").innerHTML = facData.noCertificado;
 	dummyDoc.getElementById("fac_uuid").innerHTML = facData.UUID;
@@ -283,7 +281,6 @@ function callPage(){
 			var dummyDoc = document.implementation.createHTMLDocument("dummy");
 			dummyDoc.documentElement.innerHTML = response.answer.replace(/[\t\r\n]/g,"");
 			var res = setData(dummyDoc, getData());
-			if(!res) return false;
 			dummyDoc = res.doc; facData = res.data;
 			dummyDoc.getElementsByTagName("title")[0].innerHTML = facData.UUID;
 			//Window
