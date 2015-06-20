@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "Facturapp",
+  "name": "AS Find",
+  "short_name": "AS Find",
   "description": "Descarga fácilmente facturas desde los servicios digitales del SAT",
   "version": "1.0",
   
@@ -18,11 +19,10 @@
   	"matches":[
   		"https://cfdiau.sat.gob.mx/nidp/app/login?id=SATUPCFDiCon*",
   		"https://cfdiau.sat.gob.mx/nidp/*",
-  		"https://portalcfdi.facturaelectronica.sat.gob.mx/*",
-  		"file://*.xml"
+  		"https://portalcfdi.facturaelectronica.sat.gob.mx/*"
   	],
-  	"js":["/JS/contentscript.js","/JS/xmlparser.js"],
-  	"css":["/CSS/menu_style.css","/CSS/fac_template.css"],
+  	"js":["/JS/contentscript.js"],
+  	"css":["/CSS/menu_style.css"],
   	"run_at":"document_end"
   }],
   "web_accessible_resources": [
