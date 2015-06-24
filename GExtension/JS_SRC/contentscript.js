@@ -323,6 +323,20 @@ function add_listeners(){
 String.prototype.addLeftZero = function(){
 	if(this.length == 1){return "0" + this;}else{return this;} 
 };
+	
+String.prototype.makeHtmlEntities = function(){
+	return this.replace(/=\"(.*?)(\">|\"\s|\"?|\"\/)/g, function(match, dec, comp){
+		return '="' + dec.replace(/[\"<>&']/g,function(match){
+			switch(match){
+				case '\"': return "&quot;";
+				case '<': return "&lt;";
+				case '>': return "&gt;";
+				case '&': return "&amp;";
+				case "'": return "&apos;";
+			}
+		}) + comp;
+	});
+};
 
 function client_input_check(){
 	var name = document.getElementById("fapp_input_name");
@@ -736,7 +750,7 @@ function request_invoice(facs,folio,valid,link,stack){
 		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
 		jsoned.data[0] = {name:"Folio",value:folio};
 		jsoned.data[1] = {name:"Validity",value:valid};
-		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.decodeHtmlEntity()};
+		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.makeHtmlEntities().decodeHtmlEntity()};
 		val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
 		val_changed = false;
 		chrome.extension.sendMessage(jsoned,function(response){//Write to database
@@ -813,7 +827,7 @@ function state_emi_down(stack){
 		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
 			var facs = document.getElementsByName('BtnDescarga');
 			var data = facs[count].parentNode.parentNode.parentNode.children;
-			var folio = data[1].children[0].innerHTML;var valid;
+			var folio = data[1].children[0].innerText;var valid;
 			data[data.length-1].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
 			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
 			
@@ -913,7 +927,7 @@ function state_rec_down(stack){
 		document.addEventListener('uprequested',function(){//This is synced with xmlReq.onload
 			var facs = document.getElementsByName('BtnDescarga');
 			var data = facs[count].parentNode.parentNode.parentNode.children;
-			var folio = data[1].children[0].innerHTML;var valid;
+			var folio = data[1].children[0].innerText;var valid;
 			data[data.length-2].children[0].innerHTML == "Vigente" ? valid = 1 : valid = 0;
 			var link = "https://portalcfdi.facturaelectronica.sat.gob.mx/" + facs[count].attributes[6].value.split("'")[1];
 			

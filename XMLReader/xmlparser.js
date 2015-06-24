@@ -55,18 +55,16 @@ function buildChain(objs){
 }
 
 String.prototype.makeHtmlEntities = function(){
-	return this.replace(/=\"([^=>]+)/g, function(match, dec){
-		return '="' + dec.replace(/(.+)\"([\s\w]+)/g,function(match, dec, comp){
-			return dec.replace(/[\"<>&']/g,function(match){
-				switch(match){
-					case '\"': return "&quot;";
-					case '<': return "&lt;";
-					case '>': return "&gt;";
-					case '&': return "&amp;";
-					case "'": return "&apos;";
-				}
-			}) + '"' + comp;
-		});
+	return this.replace(/=\"(.*?)(\">|\"\s)/g, function(match, dec, comp){
+		return '="' + dec.replace(/[\"<>&']/g,function(match){
+			switch(match){
+				case '\"': return "&quot;";
+				case '<': return "&lt;";
+				case '>': return "&gt;";
+				case '&': return "&amp;";
+				case "'": return "&apos;";
+			}
+		}) + comp;
 	});
 };
 
