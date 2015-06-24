@@ -740,7 +740,7 @@ function request_invoice(facs,folio,valid,link,stack){
 		val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
 		val_changed = false;
 		chrome.extension.sendMessage(jsoned,function(response){//Write to database
-			if(response.answer.indexOf('Scs') == -1){//Error writing database
+			if(response.answer.indexOf('Scs_1') == -1){//Error writing database
 				onServerError(stack,"Database could not be written");
 			}else{//Dispatch to next invoice or finish!
 				jsoned.data[3].value == 1 ? console.log("%c" + Date.now() + " - state_req: Effectively changed invoice: " + count, "color:purple") : console.log("%c" + Date.now() + " - state_req: Effectively captured invoice: " + count, "color:blue");
