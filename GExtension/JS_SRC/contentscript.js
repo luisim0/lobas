@@ -325,7 +325,7 @@ String.prototype.addLeftZero = function(){
 };
 	
 String.prototype.makeHtmlEntities = function(){
-	return this.replace(/=\"(.*?)(\">|\"\s|\"\?|\"\/)/g, function(match, dec, comp){
+	var res = this.replace(/=\"(.*?)(\">|\"\s|\"\?|\"\/)/g, function(match, dec, comp){
 		return '="' + dec.replace(/[\"<>&']/g,function(match){
 			switch(match){
 				case '\"': return "&quot;";
@@ -336,6 +336,7 @@ String.prototype.makeHtmlEntities = function(){
 			}
 		}) + comp;
 	});
+	return encodeURIComponent(res);
 };
 
 function client_input_check(){
@@ -750,7 +751,7 @@ function request_invoice(facs,folio,valid,link,stack){
 		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
 		jsoned.data[0] = {name:"Folio",value:folio};
 		jsoned.data[1] = {name:"Validity",value:valid};
-		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.makeHtmlEntities().decodeHtmlEntity()};
+		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.makeHtmlEntities()};
 		val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
 		val_changed = false;
 		chrome.extension.sendMessage(jsoned,function(response){//Write to database
@@ -1015,12 +1016,6 @@ function state_logout(stack){
 		chrome.storage.local.remove("stack");
 	}
 }
-
-String.prototype.decodeHtmlEntity = function() {
-	//var res = this.replace(/&#(\d+);/g,function(match, dec){return String.fromCharCode(dec);});
-	//return res.replace(/&#(\w+);/g,"");
-	return encodeURIComponent(this);
-};
 
 function is_session_active(){
 	if(window.location.href.indexOf(login_con_url) != -1){
