@@ -325,7 +325,7 @@ String.prototype.addLeftZero = function(){
 };
 	
 String.prototype.makeHtmlEntities = function(){
-	return this.replace(/=\"(.*?)(\">|\"\s|\"?|\"\/)/g, function(match, dec, comp){
+	return this.replace(/=\"(.*?)(\">|\"\s|\"\?|\"\/)/g, function(match, dec, comp){
 		return '="' + dec.replace(/[\"<>&']/g,function(match){
 			switch(match){
 				case '\"': return "&quot;";
