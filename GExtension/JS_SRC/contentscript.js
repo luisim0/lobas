@@ -325,18 +325,24 @@ String.prototype.addLeftZero = function(){
 };
 	
 String.prototype.makeHtmlEntities = function(){
-	var res = this.replace(/=\"(.*?)(\">|\"\s|\"\?|\"\/)/g, function(match, dec, comp){
-		return '="' + dec.replace(/[\"<>&']/g,function(match){
-			switch(match){
-				case '\"': return "&quot;";
-				case '<': return "&lt;";
-				case '>': return "&gt;";
-				case '&': return "&amp;";
-				case "'": return "&apos;";
-			}
+	var res = this.replace(/=\"(.*?)(\">|\"\s|\"\?|\"\/)/g, function(match,dec,comp){
+		return '="' + dec.replace(/(.*?)(&\w+;)(.*?)/g, function(match,b,code,a){
+			return b.entitify() + code + a.entitify();
 		}) + comp;
 	});
 	return encodeURIComponent(res);
+};
+
+String.prototype.entitify = function(){
+	return this.replace(/[\"<>&']/g,function(match){
+		switch(match){
+			case '\"': return "&quot;";
+			case '<': return "&lt;";
+			case '>': return "&gt;";
+			case '&': return "&amp;";
+			case "'": return "&apos;";
+		}
+	});
 };
 
 function client_input_check(){
