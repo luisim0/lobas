@@ -757,7 +757,9 @@ function request_invoice(facs,folio,valid,link,stack){
 		var jsoned = JSON.parse('{"action":"get_php","method":"POST","url":"","data":[]}'); jsoned.url = add_invoice_php;
 		jsoned.data[0] = {name:"Folio",value:folio};
 		jsoned.data[1] = {name:"Validity",value:valid};
-		jsoned.data[2] = {name:"XML",value:xmlReq.responseText.makeHtmlEntities()};
+		/*unescape will be deprecated! must be replaced with decodeURIComponent()...
+		 however, if the string was made with escape, no misma codifcation and pocho dies!*/
+		jsoned.data[2] = {name:"XML",value:unescape(xmlReq.responseText).makeHtmlEntities()};
 		val_changed ? jsoned.data[3] = {name:"Cambio",value:1} : jsoned.data[3] = {name:"Cambio",value:0};
 		val_changed = false;
 		chrome.extension.sendMessage(jsoned,function(response){//Write to database

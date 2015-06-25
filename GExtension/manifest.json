@@ -4,7 +4,7 @@
   "name": "AS Find",
   "short_name": "AS Find",
   "description": "Descarga fácilmente facturas desde los servicios digitales del SAT",
-  "version": "1.0.1",
+  "version": "1.0.3",
   
   "browser_action": {
     "default_icon": "/Icons/icon48.png",
