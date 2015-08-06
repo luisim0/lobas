@@ -50,7 +50,7 @@ function isNull(obj,escape){
 }
 
 function buildChain(objs){
-	var chain = "||" + objs["version"].value + "|" + objs["UUID"].value + "|" + objs["FechaTimbrado"].value + "|" + objs["selloCFD"].value + "|" + objs["noCertificadoSAT"].value + "||";
+	var chain = "||" + objs["version"].value + "|" + objs["uuid"].value + "|" + objs["fechatimbrado"].value + "|" + objs["sellocfd"].value + "|" + objs["nocertificadosat"].value + "||";
 	return chain.replace(/[\r\n\t]/g, "").replace(/ /g, "");
 }
 
@@ -70,89 +70,101 @@ String.prototype.makeHtmlEntities = function(){
 
 function getData(){
 var facData = {};
-var xmlFac = document.getElementById("collapsible0").innerText.makeHtmlEntities();
+var xmlFac = document.body.innerHTML.replace(/[\t\r\n]/g,'').makeHtmlEntities();
+xmlFac = '<?xml version="1.0" encoding="utf-8"?>' + xmlFac;
 var parser = new DOMParser();
-var xmlFac = parser.parseFromString(xmlFac,"text/xml").documentElement;
+xmlFac = parser.parseFromString(xmlFac, "text/xml").documentElement;
 /*Namespaces*/
 var cfdi = xmlFac.getAttribute("xmlns:cfdi");
 if(!cfdi) return false;
 var xsi = xmlFac.getAttribute("xmlns:xsi");
 var tfd = xmlFac.getAttribute("xmlns:tfd");
-if(!tfd) tfd = xmlFac.getElementsByTagNameNS("*","TimbreFiscalDigital")[0].getAttribute("xmlns:tfd");
+if(!tfd) tfd = xmlFac.getElementsByTagNameNS("*","timbrefiscaldigital")[0].getAttribute("xmlns:tfd");
 /*General*/
-facData.LugarExpedicion = xmlFac.getAttribute("LugarExpedicion");
+facData.LugarExpedicion = xmlFac.getAttribute("lugarexpedicion");
 facData.fecha = xmlFac.getAttribute("fecha");
-facData.noCertificado = xmlFac.getAttribute("noCertificado");
-facData.UUID = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("UUID");
+facData.noCertificado = xmlFac.getAttribute("nocertificado");
+facData.UUID = xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].getAttribute("uuid");
 /*Emisor*/
-facData.Enombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("nombre"),"No se encontró un nombre!");
-facData.Erfc = xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("rfc");
-var domFis = xmlFac.getElementsByTagNameNS(cfdi,"DomicilioFiscal")[0].attributes;
-var domFisStr = "";
-for(i = 0;i < domFis.length;i++){
-	switch(domFis[i].nodeName){
-		case "calle":
-			domFisStr += (" " + domFis[i].value + " ");break;
-		case "noExterior":
-			domFisStr += (" #" + domFis[i].value + " ");break;
-		case "noInterior":
-			domFisStr += (" int. " + domFis[i].value + ",");break;
-		case "colonia":
-			domFisStr += (" Col. " + domFis[i].value + ",");break;
-		case "referencia":
-			domFisStr += (" Referencia: '" + domFis[i].value + "',");break;
-		case "municipio":
-			domFisStr += (" Mpio. " + domFis[i].value + ",");break;
-		case "codigoPostal":
-			domFisStr += (" C.P. " + domFis[i].value + ",");break;
-		default:
-			domFisStr += (" " + domFis[i].value + ", ");
+facData.Enombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"emisor")[0].getAttribute("nombre"),"¡La factura no tiene nombre de Emisor!");
+facData.Erfc = xmlFac.getElementsByTagNameNS(cfdi,"emisor")[0].getAttribute("rfc");
+/*Hay facturas que no tienen dirección de emisor así que hay que revisar*/
+if(xmlFac.getElementsByTagNameNS(cfdi,"domiciliofiscal")[0]){
+	var domFis = xmlFac.getElementsByTagNameNS(cfdi,"domiciliofiscal")[0].attributes;
+	var domFisStr = "";
+	for(i = 0;i < domFis.length;i++){
+		switch(domFis[i].nodeName){
+			case "calle":
+				domFisStr += (" " + domFis[i].value + " ");break;
+			case "noexterior":
+				domFisStr += (" #" + domFis[i].value + " ");break;
+			case "nointerior":
+				domFisStr += (" int. " + domFis[i].value + ",");break;
+			case "colonia":
+				domFisStr += (" Col. " + domFis[i].value + ",");break;
+			case "referencia":
+				domFisStr += (" Referencia: '" + domFis[i].value + "',");break;
+			case "municipio":
+				domFisStr += (" Mpio. " + domFis[i].value + ",");break;
+			case "codigopostal":
+				domFisStr += (" C.P. " + domFis[i].value + ",");break;
+			default:
+				domFisStr += (" " + domFis[i].value + ", ");
+		}
 	}
+	domFisStr = domFisStr.replaceAt(0, "");
+	domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");	
+}else{
+	var domFisStr = "¡La factura no contiene un domicilio fiscal del emisor! Se recomienda re-facturación.";
 }
-domFisStr = domFisStr.replaceAt(0, "");
-domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");
+
 facData.DomicilioFiscal = domFisStr;
-facData.Regimen = xmlFac.getElementsByTagNameNS(cfdi,"RegimenFiscal")[0].getAttribute("Regimen");
+facData.Regimen = xmlFac.getElementsByTagNameNS(cfdi,"regimenfiscal")[0].getAttribute("regimen");
 /*Receptor*/
-facData.Rnombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("nombre"),"No se encontró un nombre!");
-facData.Rrfc = xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("rfc");
-var domFis = xmlFac.getElementsByTagNameNS(cfdi,"Domicilio")[0].attributes;
-var domFisStr = "";
-for(i = 0;i < domFis.length;i++){
-	switch(domFis[i].nodeName){
-		case "calle":
-			domFisStr += (" " + domFis[i].value + " ");break;
-		case "noExterior":
-			domFisStr += (" #" + domFis[i].value + " ");break;
-		case "noInterior":
-			domFisStr += (" int. " + domFis[i].value + ",");break;
-		case "colonia":
-			domFisStr += (" Col. " + domFis[i].value + ",");break;
-		case "referencia":
-			domFisStr += (" Referencia: '" + domFis[i].value + "',");break;
-		case "municipio":
-			domFisStr += (" Mpio. " + domFis[i].value + ",");break;
-		case "codigoPostal":
-			domFisStr += (" C.P. " + domFis[i].value + ",");break;
-		default:
-			domFisStr += (" " + domFis[i].value + ", ");
+facData.Rnombre = isNull(xmlFac.getElementsByTagNameNS(cfdi,"receptor")[0].getAttribute("nombre"),"¡La factura no tiene nombre de Receptor!");
+facData.Rrfc = xmlFac.getElementsByTagNameNS(cfdi,"receptor")[0].getAttribute("rfc");
+/*Hay facturas que no tienen dirección de receptor así que hay que revisar*/
+if(xmlFac.getElementsByTagNameNS(cfdi,"domicilio")[0]){
+	var domFis = xmlFac.getElementsByTagNameNS(cfdi,"domicilio")[0].attributes;
+	var domFisStr = "";
+	for(i = 0;i < domFis.length;i++){
+		switch(domFis[i].nodeName){
+			case "calle":
+				domFisStr += (" " + domFis[i].value + " ");break;
+			case "noexterior":
+				domFisStr += (" #" + domFis[i].value + " ");break;
+			case "nointerior":
+				domFisStr += (" int. " + domFis[i].value + ",");break;
+			case "colonia":
+				domFisStr += (" Col. " + domFis[i].value + ",");break;
+			case "referencia":
+				domFisStr += (" Referencia: '" + domFis[i].value + "',");break;
+			case "municipio":
+				domFisStr += (" Mpio. " + domFis[i].value + ",");break;
+			case "codigopostal":
+				domFisStr += (" C.P. " + domFis[i].value + ",");break;
+			default:
+				domFisStr += (" " + domFis[i].value + ", ");
+		}
 	}
+	domFisStr = domFisStr.replaceAt(0, "");
+	domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");
+}else{
+	var domFisStr = "¡La factura no contiene un domicilio fiscal del receptor! Se recomienda re-facturación.";
 }
-domFisStr = domFisStr.replaceAt(0, "");
-domFisStr = domFisStr.replaceAt(domFisStr.length - 1, ".");
 facData.Domicilio = domFisStr;
 /*Conceptos*/
-var conceptos = xmlFac.getElementsByTagNameNS(cfdi,"Concepto");
+var conceptos = xmlFac.getElementsByTagNameNS(cfdi,"concepto");
 facData.conceptos = [];
 for(i = 0;i < conceptos.length;i++){
 	facData.conceptos[i] = {cantidad:conceptos[i].getAttribute("cantidad").roundToInt(),
 		unidad:conceptos[i].getAttribute("unidad"),
 		descripcion:conceptos[i].getAttribute("descripcion"),
-		valorUnitario:conceptos[i].getAttribute("valorUnitario").makeVaro(),
+		valorUnitario:conceptos[i].getAttribute("valorunitario").makeVaro(),
 		importe:conceptos[i].getAttribute("importe").makeVaro()};
 }
 /*Impuestos trasladados*/
-var traslados = xmlFac.getElementsByTagNameNS(cfdi,"Traslado");
+var traslados = xmlFac.getElementsByTagNameNS(cfdi,"traslado");
 facData.traslados = [];
 for(i = 0;i < traslados.length;i++){
 	facData.traslados[i] = {impuesto:traslados[i].getAttribute("impuesto"),
@@ -160,33 +172,33 @@ for(i = 0;i < traslados.length;i++){
 		importe:traslados[i].getAttribute("importe").makeVaro()};
 }
 /*Impuestos retenidos*/
-var retenciones = xmlFac.getElementsByTagNameNS(cfdi,"Retencion");
+var retenciones = xmlFac.getElementsByTagNameNS(cfdi,"retencion");
 facData.retenciones = [];
 for(i = 0;i < retenciones.length;i++){
 	facData.retenciones[i] = {impuesto:retenciones[i].getAttribute("impuesto"),
 		importe:retenciones[i].getAttribute("importe").makeVaro()};
 }
 /*Varo General*/
-facData.subTotal = xmlFac.getAttribute("subTotal").makeVaro();
+facData.subTotal = xmlFac.getAttribute("subtotal").makeVaro();
 facData.descuento = isNull(xmlFac.getAttribute("descuento"),"0").makeVaro();
-facData.totalImpuestosTrasladados = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Impuestos")[0].getAttribute("totalImpuestosTrasladados"),"0").makeVaro();
-facData.totalImpuestosRetenidos = isNull(xmlFac.getElementsByTagNameNS(cfdi,"Impuestos")[0].getAttribute("totalImpuestosRetenidos"),"0").makeVaro();
+facData.totalImpuestosTrasladados = isNull(xmlFac.getElementsByTagNameNS(cfdi,"impuestos")[0].getAttribute("totalimpuestostrasladados"),"0").makeVaro();
+facData.totalImpuestosRetenidos = isNull(xmlFac.getElementsByTagNameNS(cfdi,"impuestos")[0].getAttribute("totalimpuestosretenidos"),"0").makeVaro();
 facData.total = xmlFac.getAttribute("total").makeVaro();
 /*Características del Varo*/
-facData.formaDePago = xmlFac.getAttribute("formaDePago");
-facData.metodoDePago = xmlFac.getAttribute("metodoDePago");
+facData.formaDePago = xmlFac.getAttribute("formadepago");
+facData.metodoDePago = xmlFac.getAttribute("metododepago");
 /*Timbre y sellos*/
-facData.selloCFD = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("selloCFD");
-facData.selloSAT = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("selloSAT");
-facData.cadena = buildChain(xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].attributes);
+facData.selloCFD = xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].getAttribute("sellocfd");
+facData.selloSAT = xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].getAttribute("sellosat");
+facData.cadena = buildChain(xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].attributes);
 /*Timbrado*/
-facData.noCertificadoSAT = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("noCertificadoSAT");
-facData.FechaTimbrado = xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].getAttribute("FechaTimbrado");
+facData.noCertificadoSAT = xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].getAttribute("nocertificadosat");
+facData.FechaTimbrado = xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].getAttribute("fechatimbrado");
 /*QR Code*/
-var re = "?re=" + xmlFac.getElementsByTagNameNS(cfdi,"Emisor")[0].getAttribute("rfc");
-var rr = "&rr=" + xmlFac.getElementsByTagNameNS(cfdi,"Receptor")[0].getAttribute("rfc");
+var re = "?re=" + xmlFac.getElementsByTagNameNS(cfdi,"emisor")[0].getAttribute("rfc");
+var rr = "&rr=" + xmlFac.getElementsByTagNameNS(cfdi,"receptor")[0].getAttribute("rfc");
 var tt = "&tt=" + total17(xmlFac.getAttribute("total"));
-var id = "&id=" + xmlFac.getElementsByTagNameNS(tfd,"TimbreFiscalDigital")[0].attributes["UUID"].value;
+var id = "&id=" + xmlFac.getElementsByTagNameNS(tfd,"timbrefiscaldigital")[0].attributes["uuid"].value;
 facData.qrcode = re+rr+tt+id;
 
 return facData;
@@ -273,36 +285,26 @@ function setData(dummyDoc, facData){
 }
 
 function callPage(){
-	if(window.location.href.indexOf(".xml") != -1){
-		var jsoned = JSON.parse('{"action":"get_php","method":"GET","url":"","data":[]}');
-		jsoned.url = chrome.extension.getURL("fac_template.html");
-		
-		chrome.extension.sendMessage(jsoned,function(response){
-			var dummyDoc = document.implementation.createHTMLDocument("dummy");
-			dummyDoc.documentElement.innerHTML = response.answer.replace(/[\t\r\n]/g,"");
-			var res = setData(dummyDoc, getData());
-			if(!res) return false;
-			dummyDoc = res.doc; facData = res.data;
-			dummyDoc.getElementsByTagName("title")[0].innerHTML = facData.UUID;
-			/*Window*/
-			var win = window.open("", "_blank");
-			win.document.documentElement.innerHTML = dummyDoc.documentElement.innerHTML;
-			/*QRCode will be changed so it references win.document*/
-			var qrcode = new QRCode(win.document,"fac_QR",{
-				width:189,
-				height:189
-			});
-			qrcode.makeCode(facData.qrcode);
-			var canvas = win.document.getElementById("fac_QR").getElementsByTagName("canvas")[0];
-			var image = win.document.getElementById("fac_QR").getElementsByTagName("img")[0];  
-			
-			canvas.style.display = "none";
-			image.style.display = "block"; image.setAttribute("width","189"); image.setAttribute("height","189");
-			var imgSrc = canvas.toDataURL("jpg");
-			image.src = imgSrc;
-			window.close();
-		});
-	}
+	var allData = getData();
+	document.documentElement.innerHTML = "<!DOCTYPE html><head><title>Factura template</title><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1' /><meta http-equiv='Content-Type' content='text/html; charset=UTF-8' /><style>body{font-family:sans-serif;}table{width:100%;border-collapse:collapse;}th{font-weight:bold;text-align:left;font-size:12pt;}td{font-size:10pt;}td div{width:416px;white-space: nowrap;overflow:hidden;text-overflow:ellipsis;}tr:nth-child(even){background-color:#feeae9;}.fac_tb_center{text-align:center;}.fac_tb_right{text-align:right;padding-right:5px;}.fac_main_page{width:8.5in;height:11in;}.fac_heading{width:100%;/*height:50px;*/display:table;}.fac_container_right{width:50%;display:table-cell;text-align:right;}.fac_subtitle{width:100%;height:16pt;background-color:#dcdcdc;color:#ca3434;font-size:14pt;font-weight:bold;}.fac_contents_right{font-size:14pt;padding-top:10px;}.fac_title{width:50%;height:60px;background-color:#c0504d;text-align:center;vertical-align:middle;font-size:18pt;color:white;display:table-cell;}.fac_rfc_part{width:100%;border-top: 3px solid #c0504d;margin-top: 10px;}.fac_rfc_holder{width:100%;display:table;}.fac_name_address{width:70%;text-overflow:clip;display:table-cell;}.fac_rfc_name{font-weight:bold;   }.fac_rfc{display:table-cell;text-align:center;font-size:14pt;font-weight:bold;vertical-align:middle;}.fac_rfc_regime{text-align:center;font-size:10pt;color:#ca3434;}.fac_amounts_container{width:100%;margin:10px 0px;display:table;}.fac_third_data{display:table-cell;width:33%;text-align:center;padding:0px 5px;}.fac_tax_holder{width:100%;border-bottom:black thin solid;}.fac_container_left{text-align:left;width:50%;display:table-cell;}.fac_folio_container{width:calc(100% - 40px);padding: 5px 20px;overflow:hidden;}.fac_folio_title{font-weight:bold;}.fac_folio{width:100%;text-overflow:clip;word-break:break-all;font-size:10pt;}.fac_container_tab{display:table-column;}.fac_QR{width:189px;height:189px;margin:5px 100px;}</style></head><body><div class='fac_main_page'><div class='fac_heading'><div class='fac_title'>Factura Electrónica (CFDI)</div><div class='fac_container_right'><div class='fac_subtitle'>Lugar fecha y hora de emisión:</div><div class='fac_contents_right' id='fac_lugarFecha'>LUGAR FECHA</div></div></div><div class='fac_heading'><div class='fac_container_right'><div class='fac_subtitle'>No. de serie del certificado del CSD:</div><div class='fac_contents_right' id='fac_certCSD'>XXXXXXXXXXXXX</div></div><div class='fac_container_right'><div class='fac_subtitle'>Folio Fiscal:</div><div class='fac_contents_right' id='fac_uuid'>XXX-XXX-XXX-XXX-XXXXX</div></div></div><div class='fac_rfc_part'><div class='fac_subtitle'>Datos del Emisor:</div><div class='fac_rfc_holder'><div class='fac_name_address'><div class='fac_rfc_name' id='fac_enombre'>NOMBRE EMISOR</div><div class='fac_rfc_address' id='fac_edir'>DIRECCIÓN EMISOR</div></div><div class='fac_rfc' id='fac_erfc'>RFC123456A123</div></div><div class='fac_rfc_regime' id='fac_eregime'>REGIMEN</div></div><div class='fac_rfc_part'><div class='fac_subtitle'>Datos del Receptor:</div><div class='fac_rfc_holder'><div class='fac_name_address'><div class='fac_rfc_name' id='fac_rnombre'>NOMBRE RECEPTOR</div><div class='fac_rfc_address' id='fac_rdir'>DIRECCIÓN RECEPTOR</div></div><div class='fac_rfc' id='fac_rrfc'>RFC123456A123</div></div></div><div class='fac_rfc_part'><div class='fac_subtitle'>Conceptos:</div><table><tbody id='fac_addConcepto'><tr><th class='fac_tb_center' width='40px'>Cant.</th><th class='fac_tb_center' width='120px'>Unidad</th><th width='416px'>Descripción</th><th class='fac_tb_right' width='120px'>P. Unitario</th><th class='fac_tb_right' width='120px'>Importe</th></tr></tbody></table><div class='fac_amounts_container'><div class='fac_third_data'><div class='fac_subtitle'>Impuestos trasladados</div><div class='fac_tax_holder'><table><tbody id='fac_addTraslado'><tr><th class='fac_tb_center'>TIPO</th><th class='fac_tb_center'>TASA</th><th class='fac_tb_right'>$</th></tr></tbody></table></div></div><div class='fac_third_data'><div class='fac_subtitle'>Impuestos retenidos</div><div class='fac_tax_holder'><table><tbody id='fac_addRetencion'><tr><th class='fac_tb_center'>TIPO</th><th class='fac_tb_right'>$</th></tr></tbody></table></div></div><div class='fac_third_data'><div class='fac_subtitle'>General</div><div class='fac_tax_holder'><table><tbody><tr><td>SUBTOTAL</td><td class='fac_tb_right' id='fac_subtotal'>$0.00</td></tr><tr><td>DESCUENTO</td><td class='fac_tb_right' id='fac_descuento'>$0.00</td></tr><tr><td>TRASLADADOS</td><td class='fac_tb_right' id='fac_trasladados'>$0.00</td></tr><tr><td>RETENIDOS</td><td class='fac_tb_right' id='fac_retenidos'>$0.00</td></tr><tr><th>TOTAL</th><th class='fac_tb_right' id='fac_total'>$0.00</th></tr></tbody></table></div></div></div><div class='fac_heading'><div class='fac_container_left'><div class='fac_subtitle'>Tipo de pago:</div><div class='fac_contents_left' id='fac_tipoPago'>FORMA DE PAGO</div></div><div class='fac_container_left'><div class='fac_subtitle'>Características del pago:</div><div class='fac_contents_left' id='fac_formaPago'>TIPO DE PAGO</div></div></div><div class='fac_rfc_part'><div class='fac_folio_container'><div class='fac_folio_title'>Sello Digital del CFDI:</div><div class='fac_folio' id='fac_selloDigital'>SELLO DIGITAL</div></div><div class='fac_folio_container'><div class='fac_folio_title'>Sello del SAT:</div><div class='fac_folio' id='fac_selloSAT'>SELLO SAT</div></div><div class='fac_folio_container'><div class='fac_folio_title'>Cadena Original del complemento de certificación digital del SAT:</div><div class='fac_folio' id='fac_cadenaOriginal'>CADENA ORIGINAL</div></div></div><div class='fac_heading'><div class='fac_container_left'><div class='fac_subtitle'>Código QR:</div><div class='fac_contents_left'><div class='fac_QR' id='fac_QR'></div></div></div><div class='fac_container_left'><div class='fac_subtitle'>No de Serie del Certificado del SAT:</div><div class='fac_contents_left' id='fac_noSerie'>NO SERIE</div><div class='fac_subtitle'>Fecha y hora de certificación:</div><div class='fac_contents_left' id='fac_fechaTimbrado'>2012-01-02T20:20:10</div><div class='fac_subtitle'>Notas:</div><div class='fac_contents_left' style='font-weight:bold'>Este documento es una representación impresa de un CFDI</div><div class='fac_contents_left' style='font-style:italic;margin-top:10px'>Los datos mostrados fueron obtenidos utilizando el programa para Windows 'Visor de facturas mexicanas XML'</div></div></div><div class='fac_rfc_part'></div></div></div></body>";
+	var res = setData(document, allData);
+	if(!res) return false;
+	document = res.doc; facData = res.data;
+	document.getElementsByTagName("title")[0].innerHTML = facData.UUID;
+	/*Window*/
+	/*QRCode will be changed so it references win.document*/
+	var qrcode = new QRCode(document,"fac_QR",{
+		width:189,
+		height:189
+	});
+	qrcode.makeCode(facData.qrcode);
+	var canvas = document.getElementById("fac_QR").getElementsByTagName("canvas")[0];
+	var image = document.getElementById("fac_QR").getElementsByTagName("img")[0];  
+	
+	canvas.style.display = "none";
+	image.style.display = "block"; image.setAttribute("width","189"); image.setAttribute("height","189");
+	var imgSrc = canvas.toDataURL("jpg");
+	image.src = imgSrc;
 }
 
 /*QR thing*/
